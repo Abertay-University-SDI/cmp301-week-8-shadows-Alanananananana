@@ -18,8 +18,12 @@ public:
 
 	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection);
 
+
+
 private:
 	void initShader(const wchar_t* vs, const wchar_t* ps);
+
+	
 
 private:
 	ID3D11Buffer* matrixBuffer;

@@ -19,29 +19,30 @@ public:
 	bool frame();
 	XMFLOAT3 ballPos = { 50, 7, -10 };
 	XMFLOAT3 ballPos2 = { 50, 7, -40 };
+	XMFLOAT3 ghostPos = { 0, 5, 50 };
 	ShadowMap* shadowMap;
 	ShadowMap* shadowMap2;
 protected:
 	bool render();
 	void depthPassLight1();
-	void depthPassLight2();
 	void finalPass();
 	void gui();
 
 private:
 	TextureShader* textureShader;
+	ShadowShader* shadowShader;
+	DepthShader* depthShader;
 	PlaneMesh* mesh;
 	Light* light2;
 	Light* light;
 	
 
 	//AModel* model;
-	AModel* teapot;
+	AModel* Ghost;
 	AModel* cube;
 	AModel* sphere;
 	AModel* sphere2;
-	ShadowShader* shadowShader;
-	DepthShader* depthShader;
+	
 
 	
 };

@@ -1,5 +1,3 @@
-// Light shader.h
-// Basic single light shader setup
 #ifndef _SHADOWSHADER_H_
 #define _SHADOWSHADER_H_
 

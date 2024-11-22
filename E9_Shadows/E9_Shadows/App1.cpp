@@ -13,12 +13,13 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	BaseApplication::init(hinstance, hwnd, screenWidth, screenHeight, in, VSYNC, FULL_SCREEN);
 
 	// Create Mesh object and shader object
-	mesh = new PlaneMesh(renderer->getDevice(), renderer->getDeviceContext());
-	teapot = new AModel(renderer->getDevice(), "res/teapot.obj");
+	
+	mesh = new PlaneMesh(renderer->getDevice(), renderer->getDeviceContext(), 100);
+	Ghost = new AModel(renderer->getDevice(), "res/ghost.fbx");
 	sphere = new AModel(renderer->getDevice(), "res/sphere.obj");
 	sphere2 = new AModel(renderer->getDevice(), "res/sphere.obj");
 
-	textureMgr->loadTexture(L"brick", L"res/brick1.dds");
+	textureMgr->loadTexture(L"brick", L"res/Ghost_BaseColor.png");
 	textureMgr->loadTexture(L"ball", L"res/checkerboard.png");
 
 	// initial shaders
@@ -37,24 +38,24 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	shadowMap2 = new ShadowMap(renderer->getDevice(), shadowmapWidth, shadowmapHeight);
 
 	// Configure directional light
-	
-
-	//LIGHT 2 LIGHT 2 LIGHT 2 LIGHT 2 LIGHT 2 LIGHT 2 LIGHT 2 LIGHT 2 LIGHT 2 LIGHT 2 
-	light2 = new Light();
-	light2->setAmbientColour(0.3f, 0.3f, 0.3f, 1.0f);
-	light2->setDiffuseColour(0.0f, 0.0f, 1.0f, 1.0f);
-	light2->setDirection(0.0f, -0.7f, 0.7f);
-	light2->setPosition(0.f, 20.f, 30.f);
-	light2->generateOrthoMatrix((float)sceneWidth, (float)sceneHeight, 0.1f, 100.f);
 
 	light = new Light();
-	light->setAmbientColour(0.3f, 0.3f, 0.3f, 1.0f);
-	light->setDiffuseColour(1.0f, .0f, .0f, 1.0f);
+	//light->setAmbientColour(0.3f, 0.3f, 0.3f, 1.0f);
+	light->setDiffuseColour(0.5f, 0.5f, 1.0f, 1.0f);
 	light->setDirection(0.0f, -0.7f, 0.7f);
-	light->setPosition(0.f, 20.f, -20.f);
+	light->setPosition(0.f, 20.f, 0.f);
+	//light 1 is 30 units away from the teapot in the negative z axis
 	light->generateOrthoMatrix((float)sceneWidth, (float)sceneHeight, 0.1f, 100.f);
 
 
+	//LIGHT 2 LIGHT 2 LIGHT 2 LIGHT 2 LIGHT 2 LIGHT 2 LIGHT 2 LIGHT 2 LIGHT 2 LIGHT 2 
+	light2 = new Light();
+	light2->setAmbientColour(0.1f, 0.1f, 0.1f, 1.0f);
+	light2->setDiffuseColour(1.0f, 0.5f, 0.5f, 1.0f);
+	light2->setDirection(0.0f, -0.7f, -0.7f);
+	light2->setPosition(0.f, 20.f, 100.f);
+	//light 2 is 30 units away from the teapot in the positive z axis
+	light2->generateOrthoMatrix((float)sceneWidth, (float)sceneHeight, 0.1f, 100.f);
 }
 
 App1::~App1()
@@ -105,6 +106,8 @@ void App1::depthPassLight1()
 {
 	// Set the render target to be the render to texture for light 1
 	
+	//WOULD BE REAL NEAT TO PREDEFINE OBJECT LOCATIONS TO USE A MORE GLOBAL VARIABLE FOR SHADOW LOCATIONS AS WELL something like:
+	// float3 teapotPos = {x, y, z}; these values can be used to plug into the light and shadow render locations as 
 
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
 
@@ -116,20 +119,24 @@ void App1::depthPassLight1()
 	XMMATRIX lightViewMatrix = light->getViewMatrix();
 	XMMATRIX lightProjectionMatrix = light->getOrthoMatrix();
 	// Render each object for light 1
-	worldMatrix = XMMatrixTranslation(-50.f, 0.f, -10.f);
+	worldMatrix = XMMatrixTranslation(-50.f, 0.f, -0.f);
+	
 	mesh->sendData(renderer->getDeviceContext());
 	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix, lightProjectionMatrix);
 	depthShader->render(renderer->getDeviceContext(), mesh->getIndexCount());
 
 	worldMatrix = renderer->getWorldMatrix();
-	worldMatrix = XMMatrixTranslation(0.f, 7.f, 5.f);
-	XMMATRIX scaleMatrix = XMMatrixScaling(0.5f, 0.5f, 0.5f);
-	worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
-	teapot->sendData(renderer->getDeviceContext());
+	XMMATRIX transMatrix = XMMatrixTranslation(ghostPos.x, ghostPos.y, ghostPos.z);
+	XMMATRIX scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+	
+	XMMATRIX rotMatrix = XMMatrixRotationX(45);
+	worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
+	//worldMatrix = XMMatrixMultiply(rotMatrix, worldMatrix);
+	Ghost->sendData(renderer->getDeviceContext());
 	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix, lightProjectionMatrix);
-	depthShader->render(renderer->getDeviceContext(), teapot->getIndexCount());
+	depthShader->render(renderer->getDeviceContext(), Ghost->getIndexCount());
 
-	//// Render spheres for light 1
+	{//// Render spheres for light 1
 	//worldMatrix = renderer->getWorldMatrix();
 	//worldMatrix = XMMatrixTranslation(ballPos.x, ballPos.y, ballPos.z);
 	//worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
@@ -143,7 +150,7 @@ void App1::depthPassLight1()
 	//sphere2->sendData(renderer->getDeviceContext());
 	//depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix, lightProjectionMatrix);
 	//depthShader->render(renderer->getDeviceContext(), sphere2->getIndexCount());
-
+	}
 
 	shadowMap2->BindDsvAndSetNullRenderTarget(renderer->getDeviceContext());
 
@@ -161,14 +168,14 @@ void App1::depthPassLight1()
 	depthShader->render(renderer->getDeviceContext(), mesh->getIndexCount());
 
 	worldMatrix = renderer->getWorldMatrix();
-	worldMatrix = XMMatrixTranslation(0.f, 7.f, 5.f);
-	scaleMatrix = XMMatrixScaling(0.5f, 0.5f, 0.5f);
-	worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
-	teapot->sendData(renderer->getDeviceContext());
+	transMatrix = XMMatrixTranslation(ghostPos.x, ghostPos.y, ghostPos.z);
+	scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+	worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
+	Ghost->sendData(renderer->getDeviceContext());
 	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix2, lightProjectionMatrix2);
-	depthShader->render(renderer->getDeviceContext(), teapot->getIndexCount());
+	depthShader->render(renderer->getDeviceContext(), Ghost->getIndexCount());
 
-	//// Render spheres for light 2
+	{//// Render spheres for light 2
 	//worldMatrix = renderer->getWorldMatrix();
 	//worldMatrix = XMMatrixTranslation(ballPos.x, ballPos.y, ballPos.z);
 	//worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
@@ -182,15 +189,11 @@ void App1::depthPassLight1()
 	//sphere2->sendData(renderer->getDeviceContext());
 	//depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix2, lightProjectionMatrix2);
 	//depthShader->render(renderer->getDeviceContext(), sphere2->getIndexCount());
-
+	}
 
 	// Set back buffer as render target and reset view port.
 	renderer->setBackBufferRenderTarget();
 	renderer->resetViewport();
-}
-
-void App1::depthPassLight2()
-{
 }
 
 
@@ -210,35 +213,38 @@ void App1::finalPass()
 	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
 
 	// Render floor using light 1
-	worldMatrix = XMMatrixTranslation(-50.f, 0.f, -10.f);
+	worldMatrix = XMMatrixTranslation(-50.f, 0.f, -0.f);
 	mesh->sendData(renderer->getDeviceContext());
-	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"brick"), shadowMaps[0], shadowMaps[1], light, light2);
+	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"ball"), shadowMaps[0], shadowMaps[1], light, light2);
 	shadowShader->render(renderer->getDeviceContext(), mesh->getIndexCount());
 
 	// Render teapot using light 1 and light 2
 	worldMatrix = renderer->getWorldMatrix();
-	worldMatrix = XMMatrixTranslation(0.f, 7.f, 5.f);
-	XMMATRIX scaleMatrix = XMMatrixScaling(0.5f, 0.5f, 0.5f);
-	worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
-	teapot->sendData(renderer->getDeviceContext());
+	XMMATRIX transMatrix = XMMatrixTranslation(ghostPos.x, ghostPos.y, ghostPos.z);
+	XMMATRIX scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+
+	float angle = XMConvertToRadians(90);
+	XMMATRIX rotMatrix = XMMatrixRotationX(angle);
+	worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
+	Ghost->sendData(renderer->getDeviceContext());
 	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"brick"), shadowMaps[0], shadowMaps[1], light, light2);
-	shadowShader->render(renderer->getDeviceContext(), teapot->getIndexCount());
+	shadowShader->render(renderer->getDeviceContext(), Ghost->getIndexCount());
 
-	//// Render spheres using light 1 and light 2
-	//worldMatrix = renderer->getWorldMatrix();
-	//worldMatrix = XMMatrixTranslation(ballPos.x, ballPos.y, ballPos.z);
-	////worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
-	//sphere->sendData(renderer->getDeviceContext());
-	//shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"ball"), shadowMaps[0], shadowMaps[1], light, light2);
-	//shadowShader->render(renderer->getDeviceContext(), sphere->getIndexCount());
+	// Render spheres using light 1 and light 2
+	worldMatrix = renderer->getWorldMatrix();
+	worldMatrix = XMMatrixTranslation(ballPos.x, ballPos.y, ballPos.z);
+	//worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
+	sphere->sendData(renderer->getDeviceContext());
+	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"ball"), shadowMaps[0], shadowMaps[1], light, light2);
+	shadowShader->render(renderer->getDeviceContext(), sphere->getIndexCount());
 
 
-	//worldMatrix = renderer->getWorldMatrix();
-	//worldMatrix = XMMatrixTranslation(ballPos2.x, ballPos2.y, ballPos2.z);
-	////worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
-	//sphere2->sendData(renderer->getDeviceContext());
-	//shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"ball"), shadowMaps[0], shadowMaps[1], light, light2);
-	//shadowShader->render(renderer->getDeviceContext(), sphere2->getIndexCount());
+	worldMatrix = renderer->getWorldMatrix();
+	worldMatrix = XMMatrixTranslation(ballPos2.x, ballPos2.y, ballPos2.z);
+	//worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
+	sphere2->sendData(renderer->getDeviceContext());
+	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"ball"), shadowMaps[0], shadowMaps[1], light, light2);
+	shadowShader->render(renderer->getDeviceContext(), sphere2->getIndexCount());
 
 	// Render GUI
 	gui();

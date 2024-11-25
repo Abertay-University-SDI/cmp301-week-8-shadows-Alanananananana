@@ -6,7 +6,9 @@
 #include "DXF.h"	// include dxframework
 #include "TextureShader.h"
 #include "ShadowShader.h"
+#include "ObjectShader.h"
 #include "DepthShader.h"
+
 
 class App1 : public BaseApplication
 {
@@ -36,6 +38,7 @@ private:
 	TextureShader* textureShader;
 	ShadowShader* shadowShader;
 	DepthShader* depthShader;
+	ObjectShader* objectShader;
 	PlaneMesh* mesh;
 	Light* light2;
 	Light* light;

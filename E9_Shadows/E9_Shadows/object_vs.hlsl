@@ -28,30 +28,12 @@ struct OutputType
     float4 lightViewPos2 : TEXCOORD2;
 };
 
+
 float GetHeight(float2 uv)
 {
     // Sample the height map texture using SampleLevel to avoid unsupported operations in vertex shaders
     float height = heightMap.SampleLevel(heightSampler, uv, 0).r;
     return height * 10.0f; // Scale the height appropriately
-}
-
-float3 CalculateNormals(float2 uv)
-{
-    //offset between the 2 points on the texture 
-    float offset = 0.01;
-
-    //finding offset point from first point along x-axis
-    float2 xOffsetPoint = float2(uv.x + offset, uv.y);
-    //finding the difference between the 2 points' height to calc tangent only along x axis -- knows how much to slope
-    float3 tangent = float3(1, GetHeight(xOffsetPoint) - GetHeight(uv), 0);
-
-    //finding offset point from first point along z-axis
-    float2 zOffsetPoint = float2(uv.x, uv.y + offset);
-    //finding the difference between the 2 points' height to calc bitangent 
-    float3 bitangent = float3(0, GetHeight(zOffsetPoint) - GetHeight(uv), 1);
-
-    //cross product of tangent and bitangent = the normal
-    return normalize(cross(bitangent, tangent));
 }
 
 OutputType main(InputType input)
@@ -80,8 +62,6 @@ OutputType main(InputType input)
     output.tex = input.tex;
     output.normal = mul(input.normal, (float3x3) worldMatrix);
     output.normal = normalize(output.normal);
-    
-    output.normal = CalculateNormals(input.tex);
 
     return output;
 }

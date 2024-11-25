@@ -19,8 +19,11 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	sphere = new AModel(renderer->getDevice(), "res/sphere.obj");
 	sphere2 = new AModel(renderer->getDevice(), "res/sphere.obj");
 
-	textureMgr->loadTexture(L"brick", L"res/Ghost_BaseColor.png");
-	textureMgr->loadTexture(L"ball", L"res/checkerboard.png");
+	textureMgr->loadTexture(L"ghost", L"res/Ghost_BaseColor.png");
+	textureMgr->loadTexture(L"brick", L"res/grass.png");
+	textureMgr->loadTexture(L"moon", L"res/moon.png");
+	textureMgr->loadTexture(L"height", L"res/height.png");
+	heightMapSRV = textureMgr->getTexture(L"height");
 
 	// initial shaders
 	textureShader = new TextureShader(renderer->getDevice(), hwnd);
@@ -215,7 +218,10 @@ void App1::finalPass()
 	// Render floor using light 1
 	worldMatrix = XMMatrixTranslation(-50.f, 0.f, -0.f);
 	mesh->sendData(renderer->getDeviceContext());
-	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"ball"), shadowMaps[0], shadowMaps[1], light, light2);
+	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
+		textureMgr->getTexture(L"brick"), shadowMap->getDepthMapSRV(),
+		shadowMap2->getDepthMapSRV(), heightMapSRV,
+		light, light2);
 	shadowShader->render(renderer->getDeviceContext(), mesh->getIndexCount());
 
 	// Render teapot using light 1 and light 2
@@ -227,7 +233,10 @@ void App1::finalPass()
 	XMMATRIX rotMatrix = XMMatrixRotationX(angle);
 	worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 	Ghost->sendData(renderer->getDeviceContext());
-	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"brick"), shadowMaps[0], shadowMaps[1], light, light2);
+	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
+		textureMgr->getTexture(L"ghost"), shadowMap->getDepthMapSRV(),
+		shadowMap2->getDepthMapSRV(), nullptr,
+		light, light2);
 	shadowShader->render(renderer->getDeviceContext(), Ghost->getIndexCount());
 
 	// Render spheres using light 1 and light 2
@@ -235,7 +244,10 @@ void App1::finalPass()
 	worldMatrix = XMMatrixTranslation(ballPos.x, ballPos.y, ballPos.z);
 	//worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
 	sphere->sendData(renderer->getDeviceContext());
-	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"ball"), shadowMaps[0], shadowMaps[1], light, light2);
+	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
+		textureMgr->getTexture(L"moon"), shadowMap->getDepthMapSRV(),
+		shadowMap2->getDepthMapSRV(), nullptr,
+		light, light2);
 	shadowShader->render(renderer->getDeviceContext(), sphere->getIndexCount());
 
 
@@ -243,7 +255,10 @@ void App1::finalPass()
 	worldMatrix = XMMatrixTranslation(ballPos2.x, ballPos2.y, ballPos2.z);
 	//worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
 	sphere2->sendData(renderer->getDeviceContext());
-	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"ball"), shadowMaps[0], shadowMaps[1], light, light2);
+	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
+		textureMgr->getTexture(L"moon"), shadowMap->getDepthMapSRV(),
+		shadowMap2->getDepthMapSRV(), nullptr,
+		light, light2);
 	shadowShader->render(renderer->getDeviceContext(), sphere2->getIndexCount());
 
 	// Render GUI

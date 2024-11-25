@@ -36,6 +36,7 @@ private:
 	Light* light2;
 	Light* light;
 	
+	ID3D11ShaderResourceView* heightMapSRV;
 
 	//AModel* model;
 	AModel* Ghost;

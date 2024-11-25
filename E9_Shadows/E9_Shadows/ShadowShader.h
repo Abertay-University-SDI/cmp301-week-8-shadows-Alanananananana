@@ -34,13 +34,22 @@ private:
 		float padding2;
 	};
 
+	struct HeightBufferType {
+		float heightValues[256][256]; // Example size, based on the height map resolution
+	};
+
+
 
 public:
 
 	ShadowShader(ID3D11Device* device, HWND hwnd);
 	~ShadowShader();
 
-	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* depthMap1, ID3D11ShaderResourceView* depthMap2, Light* light1, Light* light2);
+	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix,
+		const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix,
+		ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* depthMap1,
+		ID3D11ShaderResourceView* depthMap2, ID3D11ShaderResourceView* heightMap,
+		Light* light1, Light* light2);
 
 private:
 	void initShader(const wchar_t* vs, const wchar_t* ps);
@@ -51,7 +60,13 @@ private:
 	ID3D11Buffer* matrixBuffer;
 	ID3D11SamplerState* sampleState;
 	ID3D11SamplerState* sampleStateShadow;
+	ID3D11SamplerState* sampleStateHeight; // Sampler for the height map
 	ID3D11Buffer* lightBuffer;
+	ID3D11ShaderResourceView* heightMapSRV;
+
+	// Add height map
+	ID3D11ShaderResourceView* heightMap;
+
 };
 
 #endif

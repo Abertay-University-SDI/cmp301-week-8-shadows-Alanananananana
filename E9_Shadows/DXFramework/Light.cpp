@@ -72,6 +72,15 @@ void Light::setPosition(float x, float y, float z)
 	position = XMVectorSet(x, y, z, 1.0f);
 }
 
+void Light::setRange(float r) {
+	range = r;
+}
+
+void Light::setAttenuation(float constant, float linear, float quadratic)
+{
+	attenuation = XMFLOAT3(constant, linear, quadratic);
+}
+
 XMFLOAT4 Light::getAmbientColour()
 {
 	return ambientColour;
@@ -123,4 +132,13 @@ XMMATRIX Light::getProjectionMatrix()
 XMMATRIX Light::getOrthoMatrix()
 {
 	return orthoMatrix;
+}
+
+
+float Light::getRange() { 
+	return range; 
+}
+
+XMFLOAT3 Light::getAttenuation() {
+	return attenuation; 
 }

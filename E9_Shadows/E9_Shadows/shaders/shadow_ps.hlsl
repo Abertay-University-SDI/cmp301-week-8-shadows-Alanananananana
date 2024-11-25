@@ -98,6 +98,6 @@ float4 main(InputType input) : SV_TARGET
     colour += (saturate(ambient1 + ambient2));
 
     //Return the final color and texture
-    return colour * textureColour;
-
+    //return colour * textureColour;
+    return float4(input.normal, 1);
 }

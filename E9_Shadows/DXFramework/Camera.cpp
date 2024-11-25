@@ -7,6 +7,7 @@ Camera::Camera()
 {
 	position = XMFLOAT3(0.f, 0.f, 0.f);
 	rotation = XMFLOAT3(0.f, 0.f, 0.f);
+	cSpeed = 20;
 
 	lookSpeed = 4.0f;
 
@@ -99,7 +100,7 @@ void Camera::moveForward()
 	float radians;
 
 	// Update the forward movement based on the frame time
-	speed = frameTime * 5.f;
+	speed = frameTime * cSpeed;
 	
 	// Convert degrees to radians.
 	radians = rotation.y * 0.0174532f;
@@ -115,7 +116,7 @@ void Camera::moveBackward()
 	float radians;
 
 	// Update the backward movement based on the frame time
-	speed = frameTime * 5.f;// *0.5f;
+	speed = frameTime * cSpeed;// *0.5f;
 
 	// Convert degrees to radians.
 	radians = rotation.y * 0.0174532f;
@@ -129,7 +130,7 @@ void Camera::moveBackward()
 void Camera::moveUpward()
 {
 	// Update the upward movement based on the frame time
-	speed = frameTime * 5.f;// *0.5f;
+	speed = frameTime * cSpeed;// *0.5f;
 	
 	// Update the height position.
 	position.y += speed;
@@ -139,7 +140,7 @@ void Camera::moveUpward()
 void Camera::moveDownward()
 {
 	// Update the downward movement based on the frame time
-	speed = frameTime * 5.f;// *0.5f;
+	speed = frameTime * cSpeed;// *0.5f;
 
 	// Update the height position.
 	position.y -= speed;
@@ -224,7 +225,7 @@ void Camera::strafeRight()
 	float radians;
 
 	// Update the forward movement based on the frame time
-	speed = frameTime * 5.f;
+	speed = frameTime * cSpeed;
 
 	// Convert degrees to radians.
 	radians = rotation.y * 0.0174532f;
@@ -240,7 +241,7 @@ void Camera::strafeLeft()
 	float radians;
 
 	// Update the forward movement based on the frame time
-	speed = frameTime * 5.f;
+	speed = frameTime * cSpeed;
 
 	// Convert degrees to radians.
 	radians = rotation.y * 0.0174532f;

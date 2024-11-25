@@ -16,13 +16,16 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	
 	mesh = new PlaneMesh(renderer->getDevice(), renderer->getDeviceContext(), 100);
 	Ghost = new AModel(renderer->getDevice(), "res/ghost.fbx");
+	Ghost2 = new AModel(renderer->getDevice(), "res/ghost.fbx");
+	Ghost3 = new AModel(renderer->getDevice(), "res/ghost.fbx");
+	Ghost4 = new AModel(renderer->getDevice(), "res/ghost.fbx");
 	sphere = new AModel(renderer->getDevice(), "res/sphere.obj");
 	sphere2 = new AModel(renderer->getDevice(), "res/sphere.obj");
 
 	textureMgr->loadTexture(L"ghost", L"res/Ghost_BaseColor.png");
-	textureMgr->loadTexture(L"brick", L"res/grass.png");
+	textureMgr->loadTexture(L"brick", L"res/grassMap.png");
 	textureMgr->loadTexture(L"moon", L"res/moon.png");
-	textureMgr->loadTexture(L"height", L"res/height.png");
+	textureMgr->loadTexture(L"height", L"res/grassHeightMap.png");
 	heightMapSRV = textureMgr->getTexture(L"height");
 
 	// initial shaders
@@ -97,47 +100,85 @@ bool App1::render()
 	// Perform depth pass
 	
 	depthPassLight1();
-		
-	// Render scene
 
 	finalPass();
+	// Render scene
+
+	
 
 	return true;
 }
 
 void App1::depthPassLight1()
 {
-	// Set the render target to be the render to texture for light 1
-	
-	//WOULD BE REAL NEAT TO PREDEFINE OBJECT LOCATIONS TO USE A MORE GLOBAL VARIABLE FOR SHADOW LOCATIONS AS WELL something like:
-	// float3 teapotPos = {x, y, z}; these values can be used to plug into the light and shadow render locations as 
-
-	XMMATRIX worldMatrix = renderer->getWorldMatrix();
-
-
 	shadowMap->BindDsvAndSetNullRenderTarget(renderer->getDeviceContext());
 
 	// Get the view and projection matrices from light 1
 	light->generateViewMatrix();
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
 	XMMATRIX lightViewMatrix = light->getViewMatrix();
 	XMMATRIX lightProjectionMatrix = light->getOrthoMatrix();
+	XMMATRIX scaleMatrix;
+	XMMATRIX rotMatrix;
+	XMMATRIX transMatrix;
 	// Render each object for light 1
-	worldMatrix = XMMatrixTranslation(-50.f, 0.f, -0.f);
 	
+	worldMatrix = XMMatrixTranslation(-50.f, 0.f, -0.f);
 	mesh->sendData(renderer->getDeviceContext());
 	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix, lightProjectionMatrix);
 	depthShader->render(renderer->getDeviceContext(), mesh->getIndexCount());
 
-	worldMatrix = renderer->getWorldMatrix();
-	XMMATRIX transMatrix = XMMatrixTranslation(ghostPos.x, ghostPos.y, ghostPos.z);
-	XMMATRIX scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
-	
-	XMMATRIX rotMatrix = XMMatrixRotationX(45);
-	worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
-	//worldMatrix = XMMatrixMultiply(rotMatrix, worldMatrix);
-	Ghost->sendData(renderer->getDeviceContext());
-	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix, lightProjectionMatrix);
-	depthShader->render(renderer->getDeviceContext(), Ghost->getIndexCount());
+	//Ghost 1 
+	{
+		worldMatrix = renderer->getWorldMatrix();
+		transMatrix = XMMatrixTranslation(ghostPos.x, ghostPos.y, ghostPos.z);
+		scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		rotMatrix = XMMatrixRotationX(90);
+		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
+
+		Ghost->sendData(renderer->getDeviceContext());
+		depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix, lightProjectionMatrix);
+		depthShader->render(renderer->getDeviceContext(), Ghost->getIndexCount());
+	}
+	//Ghost 2
+	{
+		worldMatrix = renderer->getWorldMatrix();
+		transMatrix = XMMatrixTranslation(ghostPos2.x, ghostPos2.y, ghostPos2.z);
+		scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		rotMatrix = XMMatrixRotationX(90) * XMMatrixRotationY(90);
+
+		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
+
+		Ghost2->sendData(renderer->getDeviceContext());
+		depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix, lightProjectionMatrix);
+		depthShader->render(renderer->getDeviceContext(), Ghost2->getIndexCount());
+	}
+
+	//Ghost 3
+	{
+		worldMatrix = renderer->getWorldMatrix();
+		transMatrix = XMMatrixTranslation(ghostPos3.x, ghostPos3.y, ghostPos3.z);
+		scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		rotMatrix = XMMatrixRotationX(90) * XMMatrixRotationY(180);
+		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
+
+		Ghost3->sendData(renderer->getDeviceContext());
+		depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix, lightProjectionMatrix);
+		depthShader->render(renderer->getDeviceContext(), Ghost3->getIndexCount());
+	}
+
+	//Ghost 4
+	{
+		worldMatrix = renderer->getWorldMatrix();
+		transMatrix = XMMatrixTranslation(ghostPos4.x, ghostPos4.y, ghostPos4.z);
+		scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		rotMatrix = XMMatrixRotationX(90) * XMMatrixRotationY(270);
+		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
+
+		Ghost4->sendData(renderer->getDeviceContext());
+		depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix, lightProjectionMatrix);
+		depthShader->render(renderer->getDeviceContext(), Ghost4->getIndexCount());
+	}
 
 	{//// Render spheres for light 1
 	//worldMatrix = renderer->getWorldMatrix();
@@ -170,13 +211,54 @@ void App1::depthPassLight1()
 	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix2, lightProjectionMatrix2);
 	depthShader->render(renderer->getDeviceContext(), mesh->getIndexCount());
 
-	worldMatrix = renderer->getWorldMatrix();
-	transMatrix = XMMatrixTranslation(ghostPos.x, ghostPos.y, ghostPos.z);
-	scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
-	worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
-	Ghost->sendData(renderer->getDeviceContext());
-	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix2, lightProjectionMatrix2);
-	depthShader->render(renderer->getDeviceContext(), Ghost->getIndexCount());
+
+	//Ghost 1
+	{
+		worldMatrix = renderer->getWorldMatrix();
+		transMatrix = XMMatrixTranslation(ghostPos.x, ghostPos.y, ghostPos.z);
+		scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
+
+		Ghost->sendData(renderer->getDeviceContext());
+		depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix2, lightProjectionMatrix2);
+		depthShader->render(renderer->getDeviceContext(), Ghost->getIndexCount());
+	}
+
+	//Ghost 2
+	{
+		worldMatrix = renderer->getWorldMatrix();
+		transMatrix = XMMatrixTranslation(ghostPos2.x, ghostPos2.y, ghostPos2.z);
+		scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
+
+		Ghost2->sendData(renderer->getDeviceContext());
+		depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix2, lightProjectionMatrix2);
+		depthShader->render(renderer->getDeviceContext(), Ghost2->getIndexCount());
+	}
+
+	//Ghost 3
+	{
+		worldMatrix = renderer->getWorldMatrix();
+		transMatrix = XMMatrixTranslation(ghostPos3.x, ghostPos3.y, ghostPos3.z);
+		scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
+
+		Ghost3->sendData(renderer->getDeviceContext());
+		depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix2, lightProjectionMatrix2);
+		depthShader->render(renderer->getDeviceContext(), Ghost3->getIndexCount());
+	}
+
+	//Ghost 4
+	{
+		worldMatrix = renderer->getWorldMatrix();
+		transMatrix = XMMatrixTranslation(ghostPos4.x, ghostPos4.y, ghostPos4.z);
+		scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
+
+		Ghost4->sendData(renderer->getDeviceContext());
+		depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix2, lightProjectionMatrix2);
+		depthShader->render(renderer->getDeviceContext(), Ghost4->getIndexCount());
+	}
 
 	{//// Render spheres for light 2
 	//worldMatrix = renderer->getWorldMatrix();
@@ -215,7 +297,7 @@ void App1::finalPass()
 	XMMATRIX viewMatrix = camera->getViewMatrix();
 	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
 
-	// Render floor using light 1
+	// Render floor
 	worldMatrix = XMMatrixTranslation(-50.f, 0.f, -0.f);
 	mesh->sendData(renderer->getDeviceContext());
 	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
@@ -224,20 +306,75 @@ void App1::finalPass()
 		light, light2);
 	shadowShader->render(renderer->getDeviceContext(), mesh->getIndexCount());
 
-	// Render teapot using light 1 and light 2
-	worldMatrix = renderer->getWorldMatrix();
-	XMMATRIX transMatrix = XMMatrixTranslation(ghostPos.x, ghostPos.y, ghostPos.z);
-	XMMATRIX scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+	//Ghost 1
+	{
+		worldMatrix = renderer->getWorldMatrix();
+		XMMATRIX transMatrix = XMMatrixTranslation(ghostPos.x, ghostPos.y, ghostPos.z);
+		XMMATRIX scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		float angle = XMConvertToRadians(90);
+		XMMATRIX rotMatrix = XMMatrixRotationX(angle);
+		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 
-	float angle = XMConvertToRadians(90);
-	XMMATRIX rotMatrix = XMMatrixRotationX(angle);
-	worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
-	Ghost->sendData(renderer->getDeviceContext());
-	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
-		textureMgr->getTexture(L"ghost"), shadowMap->getDepthMapSRV(),
-		shadowMap2->getDepthMapSRV(), nullptr,
-		light, light2);
-	shadowShader->render(renderer->getDeviceContext(), Ghost->getIndexCount());
+		Ghost->sendData(renderer->getDeviceContext());
+		shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
+			textureMgr->getTexture(L"ghost"), shadowMap->getDepthMapSRV(),
+			shadowMap2->getDepthMapSRV(), nullptr,
+			light, light2);
+		shadowShader->render(renderer->getDeviceContext(), Ghost->getIndexCount());
+	}
+
+	//Ghost 2
+	{
+		worldMatrix = renderer->getWorldMatrix();
+		XMMATRIX transMatrix = XMMatrixTranslation(ghostPos2.x, ghostPos2.y, ghostPos2.z);
+		XMMATRIX scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		float angle = XMConvertToRadians(90);
+		XMMATRIX rotMatrix = XMMatrixRotationX(angle) * XMMatrixRotationY(angle);
+		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
+
+		Ghost2->sendData(renderer->getDeviceContext());
+		shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
+			textureMgr->getTexture(L"ghost"), shadowMap->getDepthMapSRV(),
+			shadowMap2->getDepthMapSRV(), nullptr,
+			light, light2);
+		shadowShader->render(renderer->getDeviceContext(), Ghost2->getIndexCount());
+	}
+
+	//Ghost 3
+	{
+		worldMatrix = renderer->getWorldMatrix();
+		XMMATRIX transMatrix = XMMatrixTranslation(ghostPos3.x, ghostPos3.y, ghostPos3.z);
+		XMMATRIX scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		float angleX = XMConvertToRadians(90);
+		float angleY = XMConvertToRadians(180);
+		XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(angleY);
+		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
+
+		Ghost3->sendData(renderer->getDeviceContext());
+		shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
+			textureMgr->getTexture(L"ghost"), shadowMap->getDepthMapSRV(),
+			shadowMap2->getDepthMapSRV(), nullptr,
+			light, light2);
+		shadowShader->render(renderer->getDeviceContext(), Ghost3->getIndexCount());
+	}
+
+	//Ghost 4
+	{
+		worldMatrix = renderer->getWorldMatrix();
+		XMMATRIX transMatrix = XMMatrixTranslation(ghostPos4.x, ghostPos4.y, ghostPos4.z);
+		XMMATRIX scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		float angleX = XMConvertToRadians(90);
+		float angleY = XMConvertToRadians(270);
+		XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(angleY);
+		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
+
+		Ghost4->sendData(renderer->getDeviceContext());
+		shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
+			textureMgr->getTexture(L"ghost"), shadowMap->getDepthMapSRV(),
+			shadowMap2->getDepthMapSRV(), nullptr,
+			light, light2);
+		shadowShader->render(renderer->getDeviceContext(), Ghost4->getIndexCount());
+	}
 
 	// Render spheres using light 1 and light 2
 	worldMatrix = renderer->getWorldMatrix();

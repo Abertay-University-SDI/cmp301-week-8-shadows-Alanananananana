@@ -63,6 +63,7 @@ private:
 	XMMATRIX orthoMatrix;	///< current orthographic matrix
 	float speed, frameTime;	///< movement speed and time variables
 	float lookSpeed;		///< rotation speed
+	float cSpeed;
 };
 
 #endif

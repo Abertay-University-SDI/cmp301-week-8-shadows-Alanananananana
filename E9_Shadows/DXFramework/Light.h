@@ -43,6 +43,10 @@ public:
 	void setPosition(float x, float y, float z);								///< Set light position (for point lights)
 	void setLookAt(float x, float y, float z);									///< Set light lookAt (near deprecation)
 
+
+	void setRange(float r); //Sets the range for point lights 
+	void setAttenuation(float constant, float linier, float quadratic); //sets the attentuation
+
 	// Getters
 	XMFLOAT4 getAmbientColour();		///< Get ambient colour, returns float4
 	XMFLOAT4 getDiffuseColour();		///< Get diffuse colour, returns float4
@@ -54,18 +58,23 @@ public:
 	XMMATRIX getProjectionMatrix();		///< Get light projection matrix for shadow mapping, returns XMMATRIX
 	XMMATRIX getOrthoMatrix();			///< Get light orthographic matrix for shadow mapping, returns XMMATRIX
 
+	float getRange();
+	XMFLOAT3 getAttenuation();
+
 
 protected:
 	XMFLOAT4 ambientColour;
 	XMFLOAT4 diffuseColour;
 	XMFLOAT3 direction;
 	XMFLOAT4 specularColour;
+	XMFLOAT3 attenuation;
 	float specularPower;
+	float range;
 	XMVECTOR position;
 	XMMATRIX viewMatrix;
 	XMMATRIX projectionMatrix;
 	XMMATRIX orthoMatrix;
-	XMVECTOR lookAt; 
+	XMVECTOR lookAt;
 };
 
 #endif

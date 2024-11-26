@@ -106,7 +106,7 @@ void ObjectShader::initShader(const wchar_t* vsFilename, const wchar_t* psFilena
 void ObjectShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix,
 	const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix,
 	ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* depthMap1,
-	ID3D11ShaderResourceView* depthMap2, ID3D11ShaderResourceView* heightMap,
+	ID3D11ShaderResourceView* depthMap2,
 	Light* light1, Light* light2)
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;

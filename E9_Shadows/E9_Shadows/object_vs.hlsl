@@ -28,7 +28,6 @@ struct OutputType
     float4 lightViewPos2 : TEXCOORD2;
 };
 
-
 float GetHeight(float2 uv)
 {
     // Sample the height map texture using SampleLevel to avoid unsupported operations in vertex shaders

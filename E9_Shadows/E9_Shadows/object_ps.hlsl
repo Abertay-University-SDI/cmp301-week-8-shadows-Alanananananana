@@ -66,8 +66,10 @@ float2 getProjectiveCoords(float4 lightViewPosition)
     float2 projTex = lightViewPosition.xy / lightViewPosition.w;
     projTex *= float2(0.5, -0.5);
     projTex += float2(0.5f, 0.5f);
-    return projTex;
+    return /*wheywheywheywheywhey*/ projTex;
+
 }
+
 
 float4 main(InputType input) : SV_TARGET
 {
@@ -75,7 +77,6 @@ float4 main(InputType input) : SV_TARGET
     float shadowMapBias = 0.001f;
     float4 colour = float4(0.f, 0.f, 0.f, 1.f);
     float4 textureColour = shaderTexture.Sample(diffuseSampler, input.tex);
-
 	//Calculate the projected texture coordinates for light 1
     float2 pTexCoord1 = getProjectiveCoords(input.lightViewPos1);
 	
@@ -98,6 +99,6 @@ float4 main(InputType input) : SV_TARGET
     colour += (saturate(ambient1 + ambient2));
 
     //Return the final color and texture
-    //return colour * textureColour;
-    return float4(input.normal, 1);
+    return colour * textureColour;
+    //return float4(input.normal, 1);
 }

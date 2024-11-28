@@ -12,6 +12,14 @@ cbuffer MatrixBuffer : register(b0)
 Texture2D heightMap : register(t2); // Height map texture
 SamplerState heightSampler : register(s2);
 
+
+cbuffer CameraBuffer : register(b1)
+{
+    float3 cameraPosition;
+    float padding;
+}
+
+
 struct InputType
 {
     float4 position : POSITION;
@@ -26,6 +34,8 @@ struct OutputType
     float3 normal : NORMAL;
     float4 lightViewPos1 : TEXCOORD1;
     float4 lightViewPos2 : TEXCOORD2;
+    float3 worldPosition : TEXCOORD3;
+    float3 viewVector : TEXCOORD4;
 };
 
 float GetHeight(float2 uv)
@@ -54,6 +64,9 @@ float3 CalculateNormals(float2 uv)
     return normalize(cross(bitangent, tangent));
 }
 
+
+
+
 OutputType main(InputType input)
 {
     OutputType output;
@@ -64,6 +77,7 @@ OutputType main(InputType input)
 
     // Calculate world position
     float4 worldPosition = mul(input.position, worldMatrix);
+    output.worldPosition = worldPosition.xyz;
 
     // Transform vertex position to view and projection spaces
     output.position = mul(worldPosition, viewMatrix);
@@ -81,7 +95,46 @@ OutputType main(InputType input)
     output.normal = mul(input.normal, (float3x3) worldMatrix);
     output.normal = normalize(output.normal);
     
-    output.normal = CalculateNormals(input.tex);
+    output.viewVector = cameraPosition.xyz - worldPosition.xyz;
+    output.viewVector = normalize(output.viewVector);
 
     return output;
 }
+
+
+
+//OutputType main(InputType input)
+//{
+//    OutputType output;
+
+//    // Calculate vertex displacement
+//    float height = GetHeight(input.tex);
+//    input.position.y += height;
+
+//    // Calculate world position
+//    float4 worldPosition = mul(input.position, worldMatrix);
+//    output.worldPosition = worldPosition.xyz;
+
+//    // Transform vertex position to view and projection spaces
+//    output.position = mul(worldPosition, viewMatrix);
+//    output.position = mul(output.position, projectionMatrix);
+
+//    // Calculate shadow positions for light 1 and light 2
+//    output.lightViewPos1 = mul(worldPosition, lightViewMatrix);
+//    output.lightViewPos1 = mul(output.lightViewPos1, lightProjectionMatrix);
+
+//    output.lightViewPos2 = mul(worldPosition, lightViewMatrix2);
+//    output.lightViewPos2 = mul(output.lightViewPos2, lightProjectionMatrix2);
+
+//    // Pass texture coordinates and transformed normals
+//    output.tex = input.tex;
+//    output.normal = mul(input.normal, (float3x3) worldMatrix);
+//    output.normal = normalize(output.normal);
+    
+//    output.normal = CalculateNormals(input.tex);
+    
+//    output.viewVector = cameraPosition.xyz - worldPosition.xyz;
+//    output.viewVector = normalize(output.viewVector);
+
+//    return output;
+//}

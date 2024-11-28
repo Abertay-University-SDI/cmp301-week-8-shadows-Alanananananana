@@ -9,7 +9,13 @@ cbuffer MatrixBuffer : register(b0)
     matrix lightProjectionMatrix2;
 };
 
-Texture2D heightMap : register(t2); // Height map texture
+cbuffer CameraBuffer : register(b1)
+{
+    float3 cameraPosition;
+    float padding;
+}
+
+    Texture2D heightMap : register(t2); // Height map texture
 SamplerState heightSampler : register(s2);
 
 struct InputType
@@ -26,6 +32,8 @@ struct OutputType
     float3 normal : NORMAL;
     float4 lightViewPos1 : TEXCOORD1;
     float4 lightViewPos2 : TEXCOORD2;
+    float3 worldPosition : TEXCOORD3;
+    float3 viewVector : TEXCOORD4;
 };
 
 float GetHeight(float2 uv)
@@ -45,6 +53,7 @@ OutputType main(InputType input)
 
     // Calculate world position
     float4 worldPosition = mul(input.position, worldMatrix);
+    output.worldPosition = worldPosition.xyz;
 
     // Transform vertex position to view and projection spaces
     output.position = mul(worldPosition, viewMatrix);
@@ -61,6 +70,9 @@ OutputType main(InputType input)
     output.tex = input.tex;
     output.normal = mul(input.normal, (float3x3) worldMatrix);
     output.normal = normalize(output.normal);
+    
+    output.viewVector = cameraPosition.xyz - worldPosition.xyz;
+    output.viewVector = normalize(output.viewVector);
 
     return output;
 }

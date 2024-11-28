@@ -1,5 +1,3 @@
-#ifndef _SHADOWSHADER_H_
-#define _SHADOWSHADER_H_
 
 #include "DXF.h"
 
@@ -30,12 +28,20 @@ private:
 
 		XMFLOAT4 ambient2;
 		XMFLOAT4 diffuse2;
-		XMFLOAT3 direction2;
+		//XMFLOAT3 direction2;
+		XMFLOAT3 position2;
+		//float specularPower;
 		float padding2;
 	};
 
 	struct HeightBufferType {
 		float heightValues[256][256]; // Example size, based on the height map resolution
+	};
+
+	struct CameraBufferType
+	{
+		XMFLOAT3 cameraPosition;
+		float padding;
 	};
 
 
@@ -49,7 +55,7 @@ public:
 		const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix,
 		ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* depthMap1,
 		ID3D11ShaderResourceView* depthMap2, ID3D11ShaderResourceView* heightMap,
-		Light* light1, Light* light2);
+		Light* light1, Light* light2, Camera* camera);
 
 private:
 	void initShader(const wchar_t* vs, const wchar_t* ps);
@@ -63,10 +69,9 @@ private:
 	ID3D11SamplerState* sampleStateHeight; // Sampler for the height map
 	ID3D11Buffer* lightBuffer;
 	ID3D11ShaderResourceView* heightMapSRV;
+	ID3D11Buffer* cameraBuffer;
 
 	// Add height map
 	ID3D11ShaderResourceView* heightMap;
 
 };
-
-#endif

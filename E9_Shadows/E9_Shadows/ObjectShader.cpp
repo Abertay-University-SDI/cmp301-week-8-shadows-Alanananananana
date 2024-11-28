@@ -41,6 +41,7 @@ void ObjectShader::initShader(const wchar_t* vsFilename, const wchar_t* psFilena
 	D3D11_SAMPLER_DESC samplerDesc;
 	D3D11_BUFFER_DESC lightBufferDesc;
 	D3D11_BUFFER_DESC heightBufferDesc;
+	D3D11_BUFFER_DESC cameraBufferDesc;
 
 	// Load (+ compile) shader files
 	loadVertexShader(vsFilename);
@@ -93,13 +94,22 @@ void ObjectShader::initShader(const wchar_t* vsFilename, const wchar_t* psFilena
 
 
 	////D3D11_BUFFER_DESC heightBufferDesc;
-	//heightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	//heightBufferDesc.ByteWidth = sizeof(HeightBufferType);
-	//heightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	//heightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	//heightBufferDesc.MiscFlags = 0;
-	//heightBufferDesc.StructureByteStride = 0;
-	//renderer->CreateBuffer(&heightBufferDesc, NULL, &heightBuffer);
+//heightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+//heightBufferDesc.ByteWidth = sizeof(HeightBufferType);
+//heightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+//heightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+//heightBufferDesc.MiscFlags = 0;
+//heightBufferDesc.StructureByteStride = 0;
+//renderer->CreateBuffer(&heightBufferDesc, NULL, &heightBuffer);
+
+
+	cameraBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	cameraBufferDesc.ByteWidth = sizeof(HeightBufferType);
+	cameraBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cameraBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	cameraBufferDesc.MiscFlags = 0;
+	cameraBufferDesc.StructureByteStride = 0;
+	renderer->CreateBuffer(&cameraBufferDesc, NULL, &cameraBuffer);
 }
 
 
@@ -107,7 +117,7 @@ void ObjectShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix,
 	ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* depthMap1,
 	ID3D11ShaderResourceView* depthMap2,
-	Light* light1, Light* light2)
+	Light* light1, Light* light2, Camera* camera)
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 
@@ -139,11 +149,24 @@ void ObjectShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	lightPtr->ambient1 = light1->getAmbientColour();
 	lightPtr->diffuse1 = light1->getDiffuseColour();
 	lightPtr->direction1 = light1->getDirection();
+	lightPtr->padding1 = 0.0f;
+
 	lightPtr->ambient2 = light2->getAmbientColour();
 	lightPtr->diffuse2 = light2->getDiffuseColour();
-	lightPtr->direction2 = light2->getDirection();
+	//lightPtr->direction2 = light2->getDirection();
+	lightPtr->position2 = light2->getPosition();
+	//lightPtr->specularPower = light2->getSpecularPower();
+	lightPtr->padding2 = 0.0f;
 	deviceContext->Unmap(lightBuffer, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &lightBuffer);
+
+	deviceContext->Map(cameraBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	CameraBufferType* cameraPtr = (CameraBufferType*)mappedResource.pData;
+	cameraPtr = (CameraBufferType*)mappedResource.pData;
+	cameraPtr->cameraPosition = camera->getPosition();
+	cameraPtr->padding = 0.0f;
+	deviceContext->Unmap(cameraBuffer, 0);
+	deviceContext->VSSetConstantBuffers(1, 1, &cameraBuffer);
 
 	// Bind resources
 	deviceContext->PSSetShaderResources(0, 1, &texture);
@@ -156,5 +179,3 @@ void ObjectShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	deviceContext->PSSetShaderResources(1, 2, shadowMaps);
 	deviceContext->PSSetSamplers(1, 1, &sampleStateShadow);
 }
-
-

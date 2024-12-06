@@ -7,6 +7,8 @@ cbuffer MatrixBuffer : register(b0)
     matrix lightProjectionMatrix;
     matrix lightViewMatrix2;
     matrix lightProjectionMatrix2;
+    matrix lightViewMatrix3;
+    matrix lightProjectionMatrix3;
 };
 
 cbuffer CameraBuffer : register(b1)
@@ -32,8 +34,9 @@ struct OutputType
     float3 normal : NORMAL;
     float4 lightViewPos1 : TEXCOORD1;
     float4 lightViewPos2 : TEXCOORD2;
-    float3 worldPosition : TEXCOORD3;
-    float3 viewVector : TEXCOORD4;
+    float4 lightViewPos3 : TEXCOORD3;
+    float3 worldPosition : TEXCOORD4;
+    float3 viewVector : TEXCOORD5;
 };
 
 float GetHeight(float2 uv)
@@ -65,6 +68,9 @@ OutputType main(InputType input)
 
     output.lightViewPos2 = mul(worldPosition, lightViewMatrix2);
     output.lightViewPos2 = mul(output.lightViewPos2, lightProjectionMatrix2);
+    
+    output.lightViewPos3 = mul(worldPosition, lightViewMatrix3);
+    output.lightViewPos3 = mul(output.lightViewPos3, lightProjectionMatrix3);
 
     // Pass texture coordinates and transformed normals
     output.tex = input.tex;

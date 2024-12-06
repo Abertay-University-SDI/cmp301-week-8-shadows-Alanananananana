@@ -81,6 +81,16 @@ void Light::setAttenuation(float constant, float linear, float quadratic)
 	attenuation = XMFLOAT3(constant, linear, quadratic);
 }
 
+void Light::setInnerConeAngle(float degrees)
+{
+	innerConeAngle = degrees; // Store cosine of the angle and converts them to radians
+}
+
+void Light::setOuterConeAngle(float degrees)
+{
+	outerConeAngle = degrees;
+}
+
 XMFLOAT4 Light::getAmbientColour()
 {
 	return ambientColour;
@@ -141,4 +151,14 @@ float Light::getRange() {
 
 XMFLOAT3 Light::getAttenuation() {
 	return attenuation; 
+}
+
+float Light::getInnerConeAngle()
+{
+	return innerConeAngle; // Return actual angle in radians
+}
+
+float Light::getOuterConeAngle()
+{
+	return outerConeAngle; // Return actual angle in radians
 }

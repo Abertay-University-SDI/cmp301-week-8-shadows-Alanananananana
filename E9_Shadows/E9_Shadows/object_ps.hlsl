@@ -14,10 +14,17 @@ cbuffer LightBufferType : register(b0)
     
     float4 ambient2;
     float4 diffuse2;
-    //float3 direction2;
     float3 position2;
-    //float specularPower;
     float padding2;
+    
+    float4 diffuse3;
+    float3 position3;
+    float range3;
+    float3 direction3;
+    float innerCone3;
+    float outerCone3;
+    float3 attenuation3;
+    //float padding3;
 };
 
 struct InputType
@@ -27,8 +34,9 @@ struct InputType
     float3 normal : NORMAL;
     float4 lightViewPos1 : TEXCOORD1;
     float4 lightViewPos2 : TEXCOORD2;
-    float3 worldPosition : TEXCOORD3;
-    float3 viewVector : TEXCOORD4;
+    float4 lightViewPos3 : TEXCOORD3;
+    float3 worldPosition : TEXCOORD4;
+    float3 viewVector : TEXCOORD5;
 };
 
 //Calculate lighting intensity based on direction and normal. Combine with light colour.
@@ -46,6 +54,26 @@ float4 calculatePointLighting(float3 lightDirection, float3 normal, float4 colou
     return colour * diff;
 }
 
+float4 calculateSpotlight(float3 lightPosition, float3 lightDirection, float3 worldPosition, float3 normal, float4 diffuse, float spotlightInnerCone, float spotlightOuterCone, float3 attenuation, float range)
+{
+    float3 lightVector = lightPosition - worldPosition;
+    float distance = length(lightVector);
+    lightVector = normalize(lightVector);
+
+    // Spotlight cone check
+    float spotFactor = saturate(dot(lightVector, -lightDirection)); // -lightDirection points outward
+    float spotlightIntensity = smoothstep(spotlightOuterCone, spotlightInnerCone, spotFactor);
+
+    // Attenuation
+    float attenuationFactor = 1.0 / (attenuation.x + attenuation.y * distance + attenuation.z * distance * distance);
+    attenuationFactor *= saturate(1.0 - (distance / range));
+
+    // Diffuse lighting
+    float intensity = saturate(dot(normal, lightVector));
+    float4 diffuseLight = diffuse * intensity * spotlightIntensity * attenuationFactor;
+
+    return diffuseLight;
+}
 
 float4 calculateSpecular(float3 lightDirection, float3 normal, float3 viewVector, float4 specColour, float specPower){
     float3 halfway = normalize(lightDirection + viewVector);
@@ -117,6 +145,18 @@ float4 main(InputType input) : SV_TARGET
     {
        
     }
+    
+    float2 pTexCoord3 = getProjectiveCoords(input.lightViewPos3);
+	
+    //Shadow test for light 1
+    
+    if (hasDepthData(pTexCoord3) && !isInShadow(shadowMapTexture[1], pTexCoord3, input.lightViewPos3, shadowMapBias))
+    {
+        //colour += calculateLighting(-direction1, input.normal, diffuse1);
+        //Spotlight
+        colour += calculateSpotlight(position3, direction3, input.worldPosition, input.normal, diffuse3, innerCone3, outerCone3, attenuation3, range3);
+    }
+    
     
     //Combine ambient light from both lights
     colour += (saturate(ambient1));

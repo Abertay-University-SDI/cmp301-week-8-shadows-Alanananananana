@@ -43,6 +43,12 @@ public:
 	void setPosition(float x, float y, float z);								///< Set light position (for point lights)
 	void setLookAt(float x, float y, float z);									///< Set light lookAt (near deprecation)
 
+	void setInnerConeAngle(float radians); // Inner cone angle (in radians)
+	float getInnerConeAngle();
+
+	void setOuterConeAngle(float radians); // Outer cone angle (in radians)
+	float getOuterConeAngle();
+
 
 	void setRange(float r); //Sets the range for point lights 
 	void setAttenuation(float constant, float linier, float quadratic); //sets the attentuation
@@ -70,11 +76,13 @@ protected:
 	XMFLOAT3 attenuation;
 	float specularPower;
 	float range;
+	float innerConeAngle = 0.9f;
+	float outerConeAngle = 0.8f;
 	XMVECTOR position;
 	XMMATRIX viewMatrix;
 	XMMATRIX projectionMatrix;
 	XMMATRIX orthoMatrix;
-	XMVECTOR lookAt; 
+	XMVECTOR lookAt;
 };
 
 #endif

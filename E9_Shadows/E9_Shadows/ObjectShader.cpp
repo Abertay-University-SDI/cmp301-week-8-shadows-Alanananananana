@@ -117,7 +117,7 @@ void ObjectShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix,
 	ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* depthMap1,
 	ID3D11ShaderResourceView* depthMap2,
-	Light* light1, Light* light2, Camera* camera)
+	Light* light1, Light* light2, Light* light3, Camera* camera)
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 
@@ -129,6 +129,8 @@ void ObjectShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	XMMATRIX tLightProj1 = XMMatrixTranspose(light1->getOrthoMatrix());
 	XMMATRIX tLightView2 = XMMatrixTranspose(light2->getViewMatrix());
 	XMMATRIX tLightProj2 = XMMatrixTranspose(light2->getOrthoMatrix());
+	XMMATRIX tLightView3 = XMMatrixTranspose(light3->getViewMatrix());
+	XMMATRIX tLightProj3 = XMMatrixTranspose(light3->getOrthoMatrix());
 
 	// Map the matrix buffer
 	deviceContext->Map(matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
@@ -140,6 +142,8 @@ void ObjectShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	dataPtr->lightProjection = tLightProj1;
 	dataPtr->lightView2 = tLightView2;
 	dataPtr->lightProjection2 = tLightProj2;
+	dataPtr->lightView3 = tLightView3;
+	dataPtr->lightProjection3 = tLightProj3;
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
 
@@ -153,10 +157,17 @@ void ObjectShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 
 	lightPtr->ambient2 = light2->getAmbientColour();
 	lightPtr->diffuse2 = light2->getDiffuseColour();
-	//lightPtr->direction2 = light2->getDirection();
 	lightPtr->position2 = light2->getPosition();
-	//lightPtr->specularPower = light2->getSpecularPower();
 	lightPtr->padding2 = 0.0f;
+
+	lightPtr->diffuse3 = light3->getDiffuseColour();
+	lightPtr->position3 = light3->getPosition();
+	lightPtr->range3 = light3->getRange();
+	lightPtr->direction3 = light3->getDirection();
+	lightPtr->innerCone3 = light3->getInnerConeAngle();
+	lightPtr->outerCone3 = light3->getOuterConeAngle();
+	lightPtr->attenuation3 = light3->getAttenuation();
+	//lightPtr->padding3 = 0.0f;
 	deviceContext->Unmap(lightBuffer, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &lightBuffer);
 

@@ -42,7 +42,7 @@ float GetHeight(float2 uv)
 {
     // Sample the height map texture using SampleLevel to avoid unsupported operations in vertex shaders
     float height = heightMap.SampleLevel(heightSampler, uv, 0).r;
-    return height * 10.0f; // Scale the height appropriately
+    return height * 6.0f; // Scale the height appropriately
 }
 
 float3 CalculateNormals(float2 uv)
@@ -94,6 +94,8 @@ OutputType main(InputType input)
     output.tex = input.tex;
     output.normal = mul(input.normal, (float3x3) worldMatrix);
     output.normal = normalize(output.normal);
+    
+    output.normal = CalculateNormals(input.tex);
     
     output.viewVector = cameraPosition.xyz - worldPosition.xyz;
     output.viewVector = normalize(output.viewVector);

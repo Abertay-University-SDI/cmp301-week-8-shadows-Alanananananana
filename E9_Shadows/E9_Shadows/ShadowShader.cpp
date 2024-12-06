@@ -3,7 +3,7 @@
 
 ShadowShader::ShadowShader(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
 {
-	initShader(L"object_vs.cso", L"object_ps.cso");
+	initShader(L"shadow_vs.cso", L"shadow_ps.cso");
 }
 
 

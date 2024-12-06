@@ -124,6 +124,7 @@ float4 main(InputType input) : SV_TARGET
 
     //Return the final color and texture
     return colour * textureColour;
+    //return float4(input.normal, 1);
 
 }
 

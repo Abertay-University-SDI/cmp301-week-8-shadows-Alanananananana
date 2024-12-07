@@ -25,8 +25,9 @@ public:
 	XMFLOAT3 ghostPos2 = { 30, 7, 55 };
 	XMFLOAT3 ghostPos3 = { 0, 7, 25 };
 	XMFLOAT3 ghostPos4 = { -30, 7, 55 };
-	XMFLOAT3 campfirePos = { 0, 7, 55 };
-	XMFLOAT3 orbitCentre = { 0.0f, 7, 55.0f };
+	XMFLOAT3 campfirePos = { 3, 7, 55 };
+	XMFLOAT3 orbitCentre = { 3.0f, 7, 55.0f };
+	XMFLOAT3 ghostScale = { 0.075, 0.075, 0.075 };
 	XMMATRIX banjoMatrix;
 	XMMATRIX tempMatrix;
 	ShadowMap* shadowMap;
@@ -46,6 +47,9 @@ private:
 	Light* light;
 	Light* light2;
 	Light* light3;
+	Light* light4;
+	Light* light5;
+	Light* light6;
 	ID3D11ShaderResourceView* heightMapSRV;
 
 	//AModel* model;
@@ -60,7 +64,7 @@ private:
 
 	//float rotationSpeed = 0.001;
 	//float moveSpeed = 0.1;
-	float radius = 25.0f; //Radius from the centre of the scene
+	float radius = 15.0f; //Radius from the centre of the scene
 	float speed = -0.002f;  //Adjust speed of rotation
 	float offsetX;
 	float offsetZ;

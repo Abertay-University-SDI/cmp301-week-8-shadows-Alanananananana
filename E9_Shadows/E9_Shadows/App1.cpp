@@ -24,9 +24,9 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	campfire = new AModel(renderer->getDevice(), "res/models/campFire.obj");
 
 	textureMgr->loadTexture(L"ghost", L"res/Ghost_BaseColor.png");
-	textureMgr->loadTexture(L"brick", L"res/grassMap.png");
+	textureMgr->loadTexture(L"brick", L"res/grassMap2.png");
 	textureMgr->loadTexture(L"moon", L"res/moon.png");
-	textureMgr->loadTexture(L"height", L"res/grassHeightMap.png");
+	textureMgr->loadTexture(L"height", L"res/grassHeightMap2.png");
 	textureMgr->loadTexture(L"campfire", L"res/campfire.png");
 	heightMapSRV = textureMgr->getTexture(L"height");
 
@@ -70,12 +70,42 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	light3 = new Light();
 	light3->setDiffuseColour(1, 1, 1, 1);
 	light3->setPosition(ghostPos.x, 30, ghostPos.z);
-	light3->setRange(35);
+	light3->setRange(30);
 	light3->setDirection(0, -1, 0);
 	light3->setInnerConeAngle(15);
 	light3->setOuterConeAngle(30);
 	light3->setAttenuation(0.2, 0.007, 0);
 	light3->generateOrthoMatrix((float)sceneWidth, (float)sceneHeight, 0.1f, 100.f);
+
+	light4 = new Light();
+	light4->setDiffuseColour(1, 1, 1, 1);
+	light4->setPosition(ghostPos.x, 30, ghostPos.z);
+	light4->setRange(30);
+	light4->setDirection(0, -1, 0);
+	light4->setInnerConeAngle(15);
+	light4->setOuterConeAngle(30);
+	light4->setAttenuation(0.2, 0.007, 0);
+	light4->generateOrthoMatrix((float)sceneWidth, (float)sceneHeight, 0.1f, 100.f);
+
+	light5 = new Light();
+	light5->setDiffuseColour(1, 1, 1, 1);
+	light5->setPosition(ghostPos.x, 30, ghostPos.z);
+	light5->setRange(30);
+	light5->setDirection(0, -1, 0);
+	light5->setInnerConeAngle(15);
+	light5->setOuterConeAngle(30);
+	light5->setAttenuation(0.2, 0.007, 0);
+	light5->generateOrthoMatrix((float)sceneWidth, (float)sceneHeight, 0.1f, 100.f);
+
+	light6 = new Light();
+	light6->setDiffuseColour(1, 1, 1, 1);
+	light6->setPosition(ghostPos.x, 30, ghostPos.z);
+	light6->setRange(30);
+	light6->setDirection(0, -1, 0);
+	light6->setInnerConeAngle(15);
+	light6->setOuterConeAngle(30);
+	light6->setAttenuation(0.2, 0.007, 0);
+	light6->generateOrthoMatrix((float)sceneWidth, (float)sceneHeight, 0.1f, 100.f);
 
 }
 
@@ -147,9 +177,9 @@ void App1::depthPassLight1()
 
 	worldMatrix = renderer->getWorldMatrix();
 	transMatrix = XMMatrixTranslation(campfirePos.x, campfirePos.y, campfirePos.z);
-	//scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+	scaleMatrix = XMMatrixScaling(0.5f, 0.5f, 0.5f);
 	rotMatrix = XMMatrixRotationX(90);
-	worldMatrix = (rotMatrix * transMatrix);
+	worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 
 	campfire->sendData(renderer->getDeviceContext());
 	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix, lightProjectionMatrix);
@@ -160,7 +190,7 @@ void App1::depthPassLight1()
 	{
 		worldMatrix = renderer->getWorldMatrix();
 		transMatrix = XMMatrixTranslation(ghostPos.x, ghostPos.y, ghostPos.z);
-		scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
 		rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(-angleY + XMConvertToRadians(90));
 		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 		Ghost->sendData(renderer->getDeviceContext());
@@ -172,7 +202,7 @@ void App1::depthPassLight1()
 	{
 		worldMatrix = renderer->getWorldMatrix();
 		transMatrix = XMMatrixTranslation(ghostPos2.x, ghostPos2.y, ghostPos2.z);
-		scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
 		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 		XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(-angleY);
 		Ghost2->sendData(renderer->getDeviceContext());
@@ -184,7 +214,7 @@ void App1::depthPassLight1()
 	{
 		worldMatrix = renderer->getWorldMatrix();
 		transMatrix = XMMatrixTranslation(ghostPos3.x, ghostPos3.y, ghostPos3.z);
-		scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
 		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 		XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(-angleY - XMConvertToRadians(90));
 		Ghost3->sendData(renderer->getDeviceContext());
@@ -196,7 +226,7 @@ void App1::depthPassLight1()
 	{
 		worldMatrix = renderer->getWorldMatrix();
 		transMatrix = XMMatrixTranslation(ghostPos4.x, ghostPos4.y, ghostPos4.z);
-		scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
 		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 		XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(-angleY - XMConvertToRadians(180));
 		Ghost4->sendData(renderer->getDeviceContext());
@@ -252,7 +282,7 @@ void App1::depthPassLight1()
 	{
 		worldMatrix = renderer->getWorldMatrix();
 		transMatrix = XMMatrixTranslation(ghostPos.x, ghostPos.y, ghostPos.z);
-		scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
 		rotMatrix = XMMatrixRotationX(90);
 		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 		Ghost->sendData(renderer->getDeviceContext());
@@ -264,7 +294,7 @@ void App1::depthPassLight1()
 	{
 		worldMatrix = renderer->getWorldMatrix();
 		transMatrix = XMMatrixTranslation(ghostPos2.x, ghostPos2.y, ghostPos2.z);
-		scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
 		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 		rotMatrix = XMMatrixRotationX(90) * XMMatrixRotationY(90);
 		Ghost2->sendData(renderer->getDeviceContext());
@@ -276,7 +306,7 @@ void App1::depthPassLight1()
 	{
 		worldMatrix = renderer->getWorldMatrix();
 		transMatrix = XMMatrixTranslation(ghostPos3.x, ghostPos3.y, ghostPos3.z);
-		scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
 		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 		rotMatrix = XMMatrixRotationX(90) * XMMatrixRotationY(180);
 		Ghost3->sendData(renderer->getDeviceContext());
@@ -288,7 +318,7 @@ void App1::depthPassLight1()
 	{
 		worldMatrix = renderer->getWorldMatrix();
 		transMatrix = XMMatrixTranslation(ghostPos4.x, ghostPos4.y, ghostPos4.z);
-		scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
 		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 		rotMatrix = XMMatrixRotationX(90) * XMMatrixRotationY(270);
 		Ghost4->sendData(renderer->getDeviceContext());
@@ -343,7 +373,7 @@ void App1::depthPassLight1()
 	{
 		worldMatrix = renderer->getWorldMatrix();
 		transMatrix = XMMatrixTranslation(ghostPos.x, ghostPos.y, ghostPos.z);
-		scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
 		rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(-angleY + XMConvertToRadians(90));
 		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 		Ghost->sendData(renderer->getDeviceContext());
@@ -355,7 +385,7 @@ void App1::depthPassLight1()
 	{
 		worldMatrix = renderer->getWorldMatrix();
 		transMatrix = XMMatrixTranslation(ghostPos2.x, ghostPos2.y, ghostPos2.z);
-		scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
 		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 		XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(-angleY);
 		Ghost2->sendData(renderer->getDeviceContext());
@@ -367,7 +397,7 @@ void App1::depthPassLight1()
 	{
 		worldMatrix = renderer->getWorldMatrix();
 		transMatrix = XMMatrixTranslation(ghostPos3.x, ghostPos3.y, ghostPos3.z);
-		scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
 		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 		XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(-angleY - XMConvertToRadians(90));
 		Ghost3->sendData(renderer->getDeviceContext());
@@ -379,7 +409,7 @@ void App1::depthPassLight1()
 	{
 		worldMatrix = renderer->getWorldMatrix();
 		transMatrix = XMMatrixTranslation(ghostPos4.x, ghostPos4.y, ghostPos4.z);
-		scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
 		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 		XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(-angleY - XMConvertToRadians(180));
 		Ghost4->sendData(renderer->getDeviceContext());
@@ -442,7 +472,7 @@ void App1::finalPass()
 
 	worldMatrix = renderer->getWorldMatrix();
 	XMMATRIX transMatrix = XMMatrixTranslation(campfirePos.x, campfirePos.y, campfirePos.z);
-	XMMATRIX scaleMatrix = XMMatrixScaling(10, 10, 10);
+	XMMATRIX scaleMatrix = XMMatrixScaling(5, 5, 5);
 
 	//XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(angleX);
 	worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
@@ -471,7 +501,7 @@ void App1::finalPass()
 		worldMatrix = renderer->getWorldMatrix();
 		light3->setPosition(ghostPos.x, 30, ghostPos.z);
 		XMMATRIX transMatrix = XMMatrixTranslation(ghostPos.x, ghostPos.y, ghostPos.z);
-		XMMATRIX scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		XMMATRIX scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
 		XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(-angleY + XMConvertToRadians(90));
 		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 
@@ -496,7 +526,7 @@ void App1::finalPass()
 		// Transform the ghost
 		worldMatrix = renderer->getWorldMatrix();
 		XMMATRIX transMatrix = XMMatrixTranslation(ghostPos2.x, ghostPos2.y, ghostPos2.z);
-		XMMATRIX scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		XMMATRIX scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
 		XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(-angleY);
 		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 
@@ -522,7 +552,7 @@ void App1::finalPass()
 		// Transform the ghost
 		worldMatrix = renderer->getWorldMatrix();
 		XMMATRIX transMatrix = XMMatrixTranslation(ghostPos3.x, ghostPos3.y, ghostPos3.z);
-		XMMATRIX scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		XMMATRIX scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
 		XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(-angleY - XMConvertToRadians(90));
 		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 
@@ -547,7 +577,7 @@ void App1::finalPass()
 
 		worldMatrix = renderer->getWorldMatrix();
 		XMMATRIX transMatrix = XMMatrixTranslation(ghostPos4.x, ghostPos4.y, ghostPos4.z);
-		XMMATRIX scaleMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+		XMMATRIX scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
 		XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(-angleY - XMConvertToRadians(180));
 		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 

@@ -80,7 +80,7 @@ private:
 	float offsetY;
 
 	float bobAngle = 0.1;
-	float bobSpeed = -0.05;
+	float bobSpeed = -0.02;
 	float bobHeight = 2;
 
 	float angleX;

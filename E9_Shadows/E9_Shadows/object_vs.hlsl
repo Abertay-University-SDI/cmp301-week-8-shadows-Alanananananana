@@ -60,8 +60,8 @@ OutputType main(InputType input)
     OutputType output;
 
     // Calculate vertex displacement
-    float height = GetHeight(input.tex);
-    input.position.y += height;
+    //float height = GetHeight(input.tex);
+    //input.position.y += height;
 
     // Calculate world position
     float4 worldPosition = mul(input.position, worldMatrix);

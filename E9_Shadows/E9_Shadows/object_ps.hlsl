@@ -151,7 +151,7 @@ float2 getProjectiveCoords(float4 lightViewPosition)
 float4 main(InputType input) : SV_TARGET
 {
     //Shadow Map Bias
-    float shadowMapBias = 0.001f;
+    float shadowMapBias = 0.005f;
     float4 colour = float4(0.f, 0.f, 0.f, 1.f);
     float4 textureColour = shaderTexture.Sample(diffuseSampler, input.tex);
 
@@ -175,19 +175,19 @@ float4 main(InputType input) : SV_TARGET
     }
     
     float2 pTexCoord4 = getProjectiveCoords(input.lightViewPos4);
-    if (hasDepthData(pTexCoord4) && !isInShadow(shadowMapTexture[2], pTexCoord4, input.lightViewPos4, shadowMapBias))
+    if (hasDepthData(pTexCoord4) && !isInShadow(shadowMapTexture[1], pTexCoord4, input.lightViewPos4, shadowMapBias))
     {
         colour += calculateSpotlight(position4, direction4, input.worldPosition, input.normal, diffuse4, innerCone4, outerCone4, attenuation4, range4);
     }
     
     float2 pTexCoord5 = getProjectiveCoords(input.lightViewPos5);
-    if (hasDepthData(pTexCoord5) && !isInShadow(shadowMapTexture[3], pTexCoord5, input.lightViewPos5, shadowMapBias))
+    if (hasDepthData(pTexCoord5) && !isInShadow(shadowMapTexture[1], pTexCoord5, input.lightViewPos5, shadowMapBias))
     {
         colour += calculateSpotlight(position5, direction5, input.worldPosition, input.normal, diffuse5, innerCone5, outerCone5, attenuation5, range5);
     }
     
     float2 pTexCoord6 = getProjectiveCoords(input.lightViewPos6);
-    if (hasDepthData(pTexCoord6) && !isInShadow(shadowMapTexture[4], pTexCoord6, input.lightViewPos6, shadowMapBias))
+    if (hasDepthData(pTexCoord6) && !isInShadow(shadowMapTexture[1], pTexCoord6, input.lightViewPos6, shadowMapBias))
     {
         colour += calculateSpotlight(position6, direction6, input.worldPosition, input.normal, diffuse6, innerCone6, outerCone6, attenuation6, range6);
     }

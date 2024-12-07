@@ -134,12 +134,12 @@ void ObjectShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	XMMATRIX tLightProj2 = XMMatrixTranspose(light2->getOrthoMatrix());
 	XMMATRIX tLightView3 = XMMatrixTranspose(light3->getViewMatrix());
 	XMMATRIX tLightProj3 = XMMatrixTranspose(light3->getOrthoMatrix());
-	XMMATRIX tLightView4 = XMMatrixTranspose(light3->getViewMatrix());
-	XMMATRIX tLightProj4 = XMMatrixTranspose(light3->getOrthoMatrix());
-	XMMATRIX tLightView5 = XMMatrixTranspose(light3->getViewMatrix());
-	XMMATRIX tLightProj5 = XMMatrixTranspose(light3->getOrthoMatrix());
-	XMMATRIX tLightView6 = XMMatrixTranspose(light3->getViewMatrix());
-	XMMATRIX tLightProj6 = XMMatrixTranspose(light3->getOrthoMatrix());
+	XMMATRIX tLightView4 = XMMatrixTranspose(light4->getViewMatrix());
+	XMMATRIX tLightProj4 = XMMatrixTranspose(light4->getOrthoMatrix());
+	XMMATRIX tLightView5 = XMMatrixTranspose(light5->getViewMatrix());
+	XMMATRIX tLightProj5 = XMMatrixTranspose(light5->getOrthoMatrix());
+	XMMATRIX tLightView6 = XMMatrixTranspose(light6->getViewMatrix());
+	XMMATRIX tLightProj6 = XMMatrixTranspose(light6->getOrthoMatrix());
 
 	// Map the matrix buffer
 	deviceContext->Map(matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);

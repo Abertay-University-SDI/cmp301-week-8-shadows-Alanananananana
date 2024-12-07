@@ -398,7 +398,6 @@ void App1::depthPassLight3() {
 		worldMatrix = renderer->getWorldMatrix();
 		transMatrix = XMMatrixTranslation(ghostPos2.x, ghostPos2.y, ghostPos2.z);
 		scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
-		
 		XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(-angleY);
 		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 		Ghost2->sendData(renderer->getDeviceContext());
@@ -436,7 +435,7 @@ void App1::depthPassLight3() {
 }
 void App1::depthPassLight4() {
 
-	//shadowMap2->BindDsvAndSetNullRenderTarget(renderer->getDeviceContext());
+	shadowMap3->BindDsvAndSetNullRenderTarget(renderer->getDeviceContext());
 	//light 4
 	light4->generateViewMatrix();
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
@@ -483,7 +482,7 @@ void App1::depthPassLight4() {
 		transMatrix = XMMatrixTranslation(ghostPos2.x, ghostPos2.y, ghostPos2.z);
 		scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
 		
-		XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(-angleY + XMConvertToRadians(180));
+		XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(-angleY);
 		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
 		Ghost2->sendData(renderer->getDeviceContext());
 		depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix4, lightProjectionMatrix4);
@@ -535,7 +534,7 @@ void App1::depthPassLight4() {
 	renderer->resetViewport();
 }
 void App1::depthPassLight5() {
-	//shadowMap4->BindDsvAndSetNullRenderTarget(renderer->getDeviceContext());
+	shadowMap4->BindDsvAndSetNullRenderTarget(renderer->getDeviceContext());
 	//light 5
 	light5->generateViewMatrix();
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
@@ -635,7 +634,7 @@ void App1::depthPassLight5() {
 	renderer->resetViewport();
 }
 void App1::depthPassLight6() {
-	//shadowMap5->BindDsvAndSetNullRenderTarget(renderer->getDeviceContext());
+	shadowMap5->BindDsvAndSetNullRenderTarget(renderer->getDeviceContext());
 
 	//light 6
 	light6->generateViewMatrix();

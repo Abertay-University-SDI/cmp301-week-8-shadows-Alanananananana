@@ -1,5 +1,5 @@
 Texture2D shaderTexture : register(t0);
-Texture2D shadowMapTexture[2] : register(t1);
+Texture2D shadowMapTexture[5] : register(t1);
 
 SamplerState diffuseSampler : register(s0);
 SamplerState shadowSampler : register(s1);
@@ -25,6 +25,33 @@ cbuffer LightBufferType : register(b0)
     float outerCone3;
     float3 attenuation3;
     //float padding3;
+    
+    float4 diffuse4;
+    float3 position4;
+    float range4;
+    float3 direction4;
+    float innerCone4;
+    float outerCone4;
+    float3 attenuation4;
+    //float padding4;
+    
+    float4 diffuse5;
+    float3 position5;
+    float range5;
+    float3 direction5;
+    float innerCone5;
+    float outerCone5;
+    float3 attenuation5;
+    //float padding5;
+    
+    float4 diffuse6;
+    float3 position6;
+    float range6;
+    float3 direction6;
+    float innerCone6;
+    float outerCone6;
+    float3 attenuation6;
+    //float padding6;
 };
 
 struct InputType
@@ -35,8 +62,11 @@ struct InputType
     float4 lightViewPos1 : TEXCOORD1;
     float4 lightViewPos2 : TEXCOORD2;
     float4 lightViewPos3 : TEXCOORD3;
-    float3 worldPosition : TEXCOORD4;
-    float3 viewVector : TEXCOORD5;
+    float4 lightViewPos4 : TEXCOORD4;
+    float4 lightViewPos5 : TEXCOORD5;
+    float4 lightViewPos6 : TEXCOORD6;
+    float3 worldPosition : TEXCOORD7;
+    float3 viewVector : TEXCOORD8;
 };
 
 //Calculate lighting intensity based on direction and normal. Combine with light colour.
@@ -128,29 +158,38 @@ float4 main(InputType input) : SV_TARGET
 
 	//Calculate the projected texture coordinates for light 1
     float2 pTexCoord1 = getProjectiveCoords(input.lightViewPos1);
-	
-    //Shadow test for light 1
-    
     if (hasDepthData(pTexCoord1) && !isInShadow(shadowMapTexture[0], pTexCoord1, input.lightViewPos1, shadowMapBias))
     {
         colour += calculateLighting(-direction1, input.normal, diffuse1);
     }
 
-    
     //Shadow test for light 2
     float3 lightVector = normalize(position2 - input.worldPosition);
     colour += calculatePointLighting(lightVector, input.normal, diffuse2);
     
     
     float2 pTexCoord3 = getProjectiveCoords(input.lightViewPos3);
-	
-    //Shadow test for light 1
-    
     if (hasDepthData(pTexCoord3) && !isInShadow(shadowMapTexture[1], pTexCoord3, input.lightViewPos3, shadowMapBias))
     {
-        //colour += calculateLighting(-direction1, input.normal, diffuse1);
-        //Spotlight
         colour += calculateSpotlight(position3, direction3, input.worldPosition, input.normal, diffuse3, innerCone3, outerCone3, attenuation3, range3);
+    }
+    
+    float2 pTexCoord4 = getProjectiveCoords(input.lightViewPos4);
+    if (hasDepthData(pTexCoord4) && !isInShadow(shadowMapTexture[2], pTexCoord4, input.lightViewPos4, shadowMapBias))
+    {
+        colour += calculateSpotlight(position4, direction4, input.worldPosition, input.normal, diffuse4, innerCone4, outerCone4, attenuation4, range4);
+    }
+    
+    float2 pTexCoord5 = getProjectiveCoords(input.lightViewPos5);
+    if (hasDepthData(pTexCoord5) && !isInShadow(shadowMapTexture[3], pTexCoord5, input.lightViewPos5, shadowMapBias))
+    {
+        colour += calculateSpotlight(position5, direction5, input.worldPosition, input.normal, diffuse5, innerCone5, outerCone5, attenuation5, range5);
+    }
+    
+    float2 pTexCoord6 = getProjectiveCoords(input.lightViewPos6);
+    if (hasDepthData(pTexCoord6) && !isInShadow(shadowMapTexture[4], pTexCoord6, input.lightViewPos6, shadowMapBias))
+    {
+        colour += calculateSpotlight(position6, direction6, input.worldPosition, input.normal, diffuse6, innerCone6, outerCone6, attenuation6, range6);
     }
     
     

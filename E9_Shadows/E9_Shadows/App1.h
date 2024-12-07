@@ -21,20 +21,29 @@ public:
 	bool frame();
 	XMFLOAT3 ballPos = { 50, 7, -10 };
 	XMFLOAT3 ballPos2 = { 50, 7, -40 };
-	XMFLOAT3 ghostPos = { 0, 7, 80 };
-	XMFLOAT3 ghostPos2 = { 30, 7, 55 };
-	XMFLOAT3 ghostPos3 = { 0, 7, 25 };
-	XMFLOAT3 ghostPos4 = { -30, 7, 55 };
-	XMFLOAT3 campfirePos = { 3, 7, 55 };
-	XMFLOAT3 orbitCentre = { 3.0f, 7, 55.0f };
+	XMFLOAT3 ghostPos = { 55, 7, 135 };
+	XMFLOAT3 ghostPos2 = { 85, 7, 110 };
+	XMFLOAT3 ghostPos3 = { 55, 7, 85 };
+	XMFLOAT3 ghostPos4 = { 25, 7, 110 };
+	XMFLOAT3 campfirePos = { 55, 7, 110 };
+	XMFLOAT3 orbitCentre = { 55, 7, 110 };
 	XMFLOAT3 ghostScale = { 0.075, 0.075, 0.075 };
 	XMMATRIX banjoMatrix;
 	XMMATRIX tempMatrix;
 	ShadowMap* shadowMap;
 	ShadowMap* shadowMap2;
+	ShadowMap* shadowMap3;
+	ShadowMap* shadowMap4;
+	ShadowMap* shadowMap5;
 protected:
 	bool render();
+	
 	void depthPassLight1();
+	void depthPassLight2();
+	void depthPassLight3();
+	void depthPassLight4();
+	void depthPassLight5();
+	void depthPassLight6();
 	void finalPass();
 	void gui();
 
@@ -64,7 +73,7 @@ private:
 
 	//float rotationSpeed = 0.001;
 	//float moveSpeed = 0.1;
-	float radius = 15.0f; //Radius from the centre of the scene
+	float radius = 25.0f; //Radius from the centre of the scene
 	float speed = -0.002f;  //Adjust speed of rotation
 	float offsetX;
 	float offsetZ;

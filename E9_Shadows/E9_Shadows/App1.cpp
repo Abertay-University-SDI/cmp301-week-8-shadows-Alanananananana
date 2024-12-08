@@ -14,6 +14,8 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 	// Create Mesh object and shader object
 	
+
+	
 	mesh = new PlaneMesh(renderer->getDevice(), renderer->getDeviceContext(), 200);
 	Ghost = new AModel(renderer->getDevice(), "res/ghost.fbx");
 	Ghost2 = new AModel(renderer->getDevice(), "res/ghost.fbx");
@@ -66,7 +68,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 	light3 = new Light();
 	light3->setDiffuseColour(1, 1, 1, 1);
-	light3->setPosition(ghostPos.x, 30, ghostPos.z);
+	light3->setPosition(campfirePos.x, campfirePos.y, campfirePos.z);
 	light3->setRange(30);
 	light3->setDirection(0, -1, 0);
 	light3->setInnerConeAngle(15);
@@ -103,6 +105,9 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	light6->setOuterConeAngle(30);
 	light6->setAttenuation(0.07, 0.007, 0);
 	light6->generateOrthoMatrix((float)sceneWidth, (float)sceneHeight, 0.1, 100);
+
+	light7 = new Light();
+	light7->setAmbientColour(1, 1, 1, 1);
 
 }
 
@@ -780,13 +785,7 @@ void App1::finalPass()
 
 	campfire->sendData(renderer->getDeviceContext());
 	objectShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
-		textureMgr->getTexture(L"campfire"), 
-		shadowMap->getDepthMapSRV(),
-		shadowMap2->getDepthMapSRV(),
-		shadowMap3->getDepthMapSRV(),
-		shadowMap4->getDepthMapSRV(),
-		shadowMap5->getDepthMapSRV(),
-		light, light2, light3, light4, light5, light6, camera);
+		textureMgr->getTexture(L"campfire"), light7, camera);
 	objectShader->render(renderer->getDeviceContext(), campfire->getIndexCount());
 
 
@@ -802,7 +801,7 @@ void App1::finalPass()
 
 		// Transform the ghost
 		worldMatrix = renderer->getWorldMatrix();
-		light3->setPosition(ghostPos.x, 30, ghostPos.z);
+		//light3->setPosition(ghostPos.x, 30, ghostPos.z);
 		XMMATRIX transMatrix = XMMatrixTranslation(ghostPos.x, ghostPos.y, ghostPos.z);
 		XMMATRIX scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
 		XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(-angleY + XMConvertToRadians(90));
@@ -1009,12 +1008,13 @@ void App1::gui()
 	light3->setRange(lightRange);
 	light3->setInnerConeAngle(lightInnerAngle);
 	light3->setOuterConeAngle(lightOuterAngle);
-	XMFLOAT3 light2Direction = light3->getDirection();
-	ImGui::SliderFloat("Light3 direction X", &light2Direction.x, -1, 1);
-	ImGui::SliderFloat("Light3 direction Y", &light2Direction.y, -1, 1);
-	ImGui::SliderFloat("Light3 direction Z", &light2Direction.z, -1, 1);
+	XMFLOAT3 light2Direction = light3->getPosition();
+	ImGui::SliderFloat("Light3 direction X", &light2Direction.x, -100, 200);
+	ImGui::SliderFloat("Light3 direction Y", &light2Direction.y, -100, 200);
+	ImGui::SliderFloat("Light3 direction Z", &light2Direction.z, -100, 200);
 
-	light3->setDirection(light2Direction.x, light2Direction.y, light2Direction.z);
+	//light3->setDirection(light2Direction.x, light2Direction.y, light2Direction.z);
+	light3->setPosition(light2Direction.x, light2Direction.y, light2Direction.z);
 
 
 	

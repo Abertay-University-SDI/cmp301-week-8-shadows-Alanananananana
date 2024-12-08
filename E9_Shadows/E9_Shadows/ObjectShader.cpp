@@ -233,3 +233,50 @@ void ObjectShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	deviceContext->PSSetShaderResources(1, 5, shadowMaps);
 	deviceContext->PSSetSamplers(1, 1, &sampleStateShadow);
 }
+
+void ObjectShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix,
+	const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix,
+	ID3D11ShaderResourceView* texture, Light* light1, Camera* camera)
+{
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+
+	// Transpose the matrices for the shader
+	XMMATRIX tworld = XMMatrixTranspose(worldMatrix);
+	XMMATRIX tview = XMMatrixTranspose(viewMatrix);
+	XMMATRIX tproj = XMMatrixTranspose(projectionMatrix);
+	XMMATRIX tLightView1 = XMMatrixTranspose(light1->getViewMatrix());
+	XMMATRIX tLightProj1 = XMMatrixTranspose(light1->getOrthoMatrix());
+
+	// Map the matrix buffer
+	deviceContext->Map(matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	MatrixBufferType* dataPtr = (MatrixBufferType*)mappedResource.pData;
+	dataPtr->world = tworld;
+	dataPtr->view = tview;
+	dataPtr->projection = tproj;
+	dataPtr->lightView = tLightView1;
+	dataPtr->lightProjection = tLightProj1;
+	deviceContext->Unmap(matrixBuffer, 0);
+	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
+
+	// Map the light buffer
+	deviceContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	LightBufferType* lightPtr = (LightBufferType*)mappedResource.pData;
+	lightPtr->ambient1 = light1->getAmbientColour();
+	lightPtr->diffuse1 = light1->getDiffuseColour();
+	lightPtr->direction1 = light1->getDirection();
+	lightPtr->padding1 = 0.0f;
+	deviceContext->Unmap(lightBuffer, 0);
+	deviceContext->PSSetConstantBuffers(0, 1, &lightBuffer);
+
+	deviceContext->Map(cameraBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	CameraBufferType* cameraPtr = (CameraBufferType*)mappedResource.pData;
+	cameraPtr = (CameraBufferType*)mappedResource.pData;
+	cameraPtr->cameraPosition = camera->getPosition();
+	cameraPtr->padding = 0.0f;
+	deviceContext->Unmap(cameraBuffer, 0);
+	deviceContext->VSSetConstantBuffers(1, 1, &cameraBuffer);
+
+	// Bind resources
+	deviceContext->PSSetShaderResources(0, 1, &texture);
+	deviceContext->PSSetSamplers(0, 1, &sampleState);
+}

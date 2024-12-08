@@ -59,7 +59,12 @@ private:
 	Light* light4;
 	Light* light5;
 	Light* light6;
+	Light* light7;
+
 	ID3D11ShaderResourceView* heightMapSRV;
+	ID3D11RenderTargetView* renderTargetView;
+	ID3D11ShaderResourceView* renderTargetSRV; //To access the rendered scene in the shaders
+	ID3D11Texture2D* renderTargetTexture;
 
 	//AModel* model;
 	AModel* Ghost;

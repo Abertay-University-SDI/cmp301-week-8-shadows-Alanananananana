@@ -102,6 +102,11 @@ public:
 		ID3D11ShaderResourceView* depthMap5,
 		Light* light1, Light* light2, Light* light3, Light* light4, Light* light5, Light* light6, Camera* camera);
 
+	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix,
+		const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix,
+		ID3D11ShaderResourceView* texture,
+		Light* light, Camera* camera);
+
 private:
 	void initShader(const wchar_t* vs, const wchar_t* ps);
 

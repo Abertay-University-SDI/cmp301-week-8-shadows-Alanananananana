@@ -12,10 +12,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	// Call super/parent init function (required!)
 	BaseApplication::init(hinstance, hwnd, screenWidth, screenHeight, in, VSYNC, FULL_SCREEN);
 
-	// Create Mesh object and shader object
-	
-
-	
+	// Create scene objects including the plane 
 	mesh = new PlaneMesh(renderer->getDevice(), renderer->getDeviceContext(), 200);
 	Ghost = new AModel(renderer->getDevice(), "res/ghost.fbx");
 	Ghost2 = new AModel(renderer->getDevice(), "res/ghost.fbx");
@@ -25,6 +22,11 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	sphere2 = new AModel(renderer->getDevice(), "res/sphere.obj");
 	campfire = new AModel(renderer->getDevice(), "res/models/campFire.obj");
 
+	orthoMesh = new OrthoMesh(renderer->getDevice(), renderer->getDeviceContext(), screenWidth, screenHeight);	//Full screen size
+
+
+
+	//assign textures to names for later reference
 	textureMgr->loadTexture(L"ghost", L"res/Ghost_BaseColor.png");
 	textureMgr->loadTexture(L"brick", L"res/grassMap2.png");
 	textureMgr->loadTexture(L"moon", L"res/moon.png");
@@ -33,10 +35,20 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	heightMapSRV = textureMgr->getTexture(L"height");
 
 	//initial shaders
-	//textureShader = new TextureShader(renderer->getDevice(), hwnd);
+	textureShader = new TextureShader(renderer->getDevice(), hwnd);
 	depthShader = new DepthShader(renderer->getDevice(), hwnd);
 	shadowShader = new ShadowShader(renderer->getDevice(), hwnd);
 	objectShader = new ObjectShader(renderer->getDevice(), hwnd);
+
+	//Post processing
+	horizontalBlurShader = new HorizontalBlurShader(renderer->getDevice(), hwnd);
+	verticalBlurShader = new VerticalBlurShader(renderer->getDevice(), hwnd);
+
+
+	renderTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	horizontalBlurTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	verticalBlurTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+
 
 	//shadow map variables
 	int shadowmapWidth = 8192;
@@ -50,6 +62,8 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	shadowMap3 = new ShadowMap(renderer->getDevice(), shadowmapWidth, shadowmapHeight);
 	shadowMap4 = new ShadowMap(renderer->getDevice(), shadowmapWidth, shadowmapHeight);
 	shadowMap5 = new ShadowMap(renderer->getDevice(), shadowmapWidth, shadowmapHeight);
+
+
 
 	// Configure lights
 
@@ -120,7 +134,6 @@ App1::~App1()
 
 }
 
-
 bool App1::frame()
 {
 	bool result;
@@ -145,15 +158,17 @@ bool App1::render()
 {
 
 	// Perform depth pass
-	
+	processPass();
+
 	depthPassLight1();
 	depthPassLight2();
 	depthPassLight3();
 	depthPassLight4();
 	depthPassLight5();
 	depthPassLight6();
-
 	
+	horizontalPass();
+	verticalPass();
 
 	finalPass();
 	// Render scene
@@ -161,6 +176,183 @@ bool App1::render()
 	
 
 	return true;
+}
+
+void App1::processPass() {
+
+	renderTexture->setRenderTarget(renderer->getDeviceContext());
+	renderTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.0f, 1.0f, 1.0f);
+
+	ID3D11ShaderResourceView* shadowMaps[5] = { shadowMap->getDepthMapSRV(), shadowMap2->getDepthMapSRV(), shadowMap3->getDepthMapSRV(), shadowMap4->getDepthMapSRV(), shadowMap5->getDepthMapSRV() };
+	renderer->getDeviceContext()->PSSetShaderResources(1, 5, shadowMaps);
+
+	// Clear the scene. (default blue colour)
+	renderer->beginScene(0.39f, 0.58f, 0.92f, 1.0f);
+	camera->update();
+
+	angleX = XMConvertToRadians(90);
+	angleY += speed;
+	bobAngle += bobSpeed;
+
+
+	// Get the world, view, projection, and ortho matrices from the camera and Direct3D objects.
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	XMMATRIX viewMatrix = camera->getViewMatrix();
+	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
+
+	// Render floor
+	worldMatrix = XMMatrixTranslation(-50.f, 0.f, -0.f);
+	mesh->sendData(renderer->getDeviceContext());
+	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
+		textureMgr->getTexture(L"brick"),
+		shadowMap->getDepthMapSRV(),
+		shadowMap2->getDepthMapSRV(),
+		shadowMap3->getDepthMapSRV(),
+		shadowMap4->getDepthMapSRV(),
+		shadowMap5->getDepthMapSRV(), heightMapSRV,
+		light, light2, light3, light4, light5, light6, camera);
+	shadowShader->render(renderer->getDeviceContext(), mesh->getIndexCount());
+
+	//CAMPFIRE
+
+	worldMatrix = renderer->getWorldMatrix();
+	XMMATRIX transMatrix = XMMatrixTranslation(campfirePos.x, campfirePos.y, campfirePos.z);
+	XMMATRIX scaleMatrix = XMMatrixScaling(5, 5, 5);
+
+	//XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(angleX);
+	worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
+	//worldMatrix = XMMatrixMultiply(worldMatrix, rotMatrix);
+	worldMatrix = XMMatrixMultiply(worldMatrix, transMatrix);
+
+	campfire->sendData(renderer->getDeviceContext());
+	objectShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
+		textureMgr->getTexture(L"campfire"), light7, camera);
+	objectShader->render(renderer->getDeviceContext(), campfire->getIndexCount());
+
+
+	//Ghost 1
+	{
+		angleY += speed; //Increment angle for circular motion
+		offsetX = radius * cos(angleY); //offsets the position of the ghost by an amount dependant on the angle Y (Which is being constantly changed by "speed". By taking the cosine of this, we can always get a value between -1 and 1. After multiplying THAT by the radius, we get a circle :D
+		offsetY = bobHeight * cos(-bobAngle + XMConvertToRadians(90)); //Creates a bobbing effect for the ghosts to move up and down slightly when moving. Added the 90 radians to offset the bobbing from the other ghosts so that theyre not perfectly in sync
+		offsetZ = radius * sin(angleY); //Offsets the position of the Z so that we move in a circle. We use sine to compliment the cosine of the X axis, otherwise the ghost just moves in a diagonal line rather than a circle
+		ghostPos.x = orbitCentre.x + offsetX; //Sets the new positions of the ghost to the ghostPos vector
+		ghostPos.y = orbitCentre.y + offsetY;
+		ghostPos.z = orbitCentre.z + offsetZ;
+
+		// Transform the ghost
+		worldMatrix = renderer->getWorldMatrix();
+		//light3->setPosition(ghostPos.x, 30, ghostPos.z);
+		XMMATRIX transMatrix = XMMatrixTranslation(ghostPos.x, ghostPos.y, ghostPos.z);
+		XMMATRIX scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
+		XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(-angleY + XMConvertToRadians(90));
+		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
+
+		Ghost->sendData(renderer->getDeviceContext());
+		objectShader->setShaderParameters(renderer->getDeviceContext(),
+			worldMatrix, viewMatrix, projectionMatrix,
+			textureMgr->getTexture(L"ghost"),
+			shadowMap->getDepthMapSRV(),
+			shadowMap2->getDepthMapSRV(),
+			shadowMap3->getDepthMapSRV(),
+			shadowMap4->getDepthMapSRV(),
+			shadowMap5->getDepthMapSRV(),
+			light, light2, light3, light4, light5, light6, camera);
+		objectShader->render(renderer->getDeviceContext(), Ghost->getIndexCount());
+	}
+
+	//Ghost 2
+	{
+		offsetX = radius * cos(angleY + XMConvertToRadians(90));
+		offsetY = bobHeight * cos(bobAngle);
+		offsetZ = radius * sin(angleY + XMConvertToRadians(90));
+		ghostPos2.x = orbitCentre.x + offsetX;
+		ghostPos2.y = orbitCentre.y + offsetY;
+		ghostPos2.z = orbitCentre.z + offsetZ;
+
+		// Transform the ghost
+		worldMatrix = renderer->getWorldMatrix();
+		light4->setPosition(ghostPos2.x, 30, ghostPos2.z);
+		XMMATRIX transMatrix = XMMatrixTranslation(ghostPos2.x, ghostPos2.y, ghostPos2.z);
+		XMMATRIX scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
+		XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(-angleY);
+		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
+
+		Ghost2->sendData(renderer->getDeviceContext());
+		objectShader->setShaderParameters(renderer->getDeviceContext(),
+			worldMatrix, viewMatrix, projectionMatrix,
+			textureMgr->getTexture(L"ghost"),
+			shadowMap->getDepthMapSRV(),
+			shadowMap2->getDepthMapSRV(),
+			shadowMap3->getDepthMapSRV(),
+			shadowMap4->getDepthMapSRV(),
+			shadowMap5->getDepthMapSRV(),
+			light, light2, light3, light4, light5, light6, camera);
+		objectShader->render(renderer->getDeviceContext(), Ghost2->getIndexCount());
+	}
+
+	//Ghost 3
+	{
+		angleY += speed;
+		offsetX = radius * cos(angleY + XMConvertToRadians(180));
+		offsetY = bobHeight * cos(bobAngle + XMConvertToRadians(180));
+		offsetZ = radius * sin(angleY + XMConvertToRadians(180));
+		ghostPos3.x = orbitCentre.x + offsetX;
+		ghostPos3.y = orbitCentre.y + offsetY;
+		ghostPos3.z = orbitCentre.z + offsetZ;
+
+		// Transform the ghost
+		worldMatrix = renderer->getWorldMatrix();
+		light5->setPosition(ghostPos3.x, 30, ghostPos3.z);
+		XMMATRIX transMatrix = XMMatrixTranslation(ghostPos3.x, ghostPos3.y, ghostPos3.z);
+		XMMATRIX scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
+		XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(-angleY - XMConvertToRadians(90));
+		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
+
+		Ghost3->sendData(renderer->getDeviceContext());
+		objectShader->setShaderParameters(renderer->getDeviceContext(),
+			worldMatrix, viewMatrix, projectionMatrix,
+			textureMgr->getTexture(L"ghost"),
+			shadowMap->getDepthMapSRV(),
+			shadowMap2->getDepthMapSRV(),
+			shadowMap3->getDepthMapSRV(),
+			shadowMap4->getDepthMapSRV(),
+			shadowMap5->getDepthMapSRV(),
+			light, light2, light3, light4, light5, light6, camera);
+		objectShader->render(renderer->getDeviceContext(), Ghost3->getIndexCount());
+	}
+
+	//Ghost 4
+	{
+		angleY += speed; //Increment angle for circular motion
+		offsetX = radius * cos(angleY - XMConvertToRadians(90));
+		offsetY = bobHeight * cos(-bobAngle - XMConvertToRadians(90));
+		offsetZ = radius * sin(angleY - XMConvertToRadians(90));
+		ghostPos4.x = orbitCentre.x + offsetX;
+		ghostPos4.y = orbitCentre.y + offsetY;
+		ghostPos4.z = orbitCentre.z + offsetZ;
+
+		worldMatrix = renderer->getWorldMatrix();
+		light6->setPosition(ghostPos4.x, 30, ghostPos4.z);
+		XMMATRIX transMatrix = XMMatrixTranslation(ghostPos4.x, ghostPos4.y, ghostPos4.z);
+		XMMATRIX scaleMatrix = XMMatrixScaling(ghostScale.x, ghostScale.y, ghostScale.z);
+		XMMATRIX rotMatrix = XMMatrixRotationX(angleX) * XMMatrixRotationY(-angleY - XMConvertToRadians(180));
+		worldMatrix = (scaleMatrix * rotMatrix * transMatrix);
+
+		Ghost4->sendData(renderer->getDeviceContext());
+		objectShader->setShaderParameters(renderer->getDeviceContext(),
+			worldMatrix, viewMatrix, projectionMatrix,
+			textureMgr->getTexture(L"ghost"),
+			shadowMap->getDepthMapSRV(),
+			shadowMap2->getDepthMapSRV(),
+			shadowMap3->getDepthMapSRV(),
+			shadowMap4->getDepthMapSRV(),
+			shadowMap5->getDepthMapSRV(),
+			light, light2, light3, light4, light5, light6, camera);
+		objectShader->render(renderer->getDeviceContext(), Ghost4->getIndexCount());
+	}
+
+	renderer->setBackBufferRenderTarget();
 }
 
 void App1::depthPassLight1()
@@ -739,6 +931,53 @@ void App1::depthPassLight6() {
 	renderer->setBackBufferRenderTarget();
 	renderer->resetViewport();
 }
+
+void App1::horizontalPass() {
+	XMMATRIX worldMatrix, baseViewMatrix, orthoMatrix;
+
+	float screenSizeX = (float)horizontalBlurTexture->getTextureWidth();
+	horizontalBlurTexture->setRenderTarget(renderer->getDeviceContext());
+	horizontalBlurTexture->clearRenderTarget(renderer->getDeviceContext(), 1.0f, 1.0f, 0.0f, 1.0f);
+
+	worldMatrix = renderer->getWorldMatrix();
+	baseViewMatrix = camera->getOrthoViewMatrix();
+	orthoMatrix = horizontalBlurTexture->getOrthoMatrix();
+
+	// Render for Horizontal Blur
+	renderer->setZBuffer(false);
+	orthoMesh->sendData(renderer->getDeviceContext());
+	horizontalBlurShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, baseViewMatrix, orthoMatrix, renderTexture->getShaderResourceView(), screenSizeX);
+	horizontalBlurShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+	renderer->setZBuffer(true);
+
+	// Reset the render target back to the original back buffer and not the render to texture anymore.
+	renderer->setBackBufferRenderTarget();
+}
+
+void App1::verticalPass() {
+
+	XMMATRIX worldMatrix, baseViewMatrix, orthoMatrix;
+
+	float screenSizeY = (float)verticalBlurTexture->getTextureHeight();
+	verticalBlurTexture->setRenderTarget(renderer->getDeviceContext());
+	verticalBlurTexture->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 1.0f, 1.0f, 1.0f);
+
+	worldMatrix = renderer->getWorldMatrix();
+	baseViewMatrix = camera->getOrthoViewMatrix();
+	// Get the ortho matrix from the render to texture since texture has different dimensions being that it is smaller.
+	orthoMatrix = verticalBlurTexture->getOrthoMatrix();
+
+	// Render for Vertical Blur
+	renderer->setZBuffer(false);
+	orthoMesh->sendData(renderer->getDeviceContext());
+	verticalBlurShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, baseViewMatrix, orthoMatrix, horizontalBlurTexture->getShaderResourceView(), screenSizeY);
+	verticalBlurShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+	renderer->setZBuffer(true);
+
+	// Reset the render target back to the original back buffer and not the render to texture anymore.
+	renderer->setBackBufferRenderTarget();
+}
+
 void App1::finalPass()
 {
 
@@ -911,7 +1150,8 @@ void App1::finalPass()
 		objectShader->render(renderer->getDeviceContext(), Ghost4->getIndexCount());
 	}
 
-	//// Render spheres using light 1 and light 2
+	{
+		//// Render spheres using light 1 and light 2
 	//worldMatrix = renderer->getWorldMatrix();
 	//worldMatrix = XMMatrixTranslation(ballPos.x, ballPos.y, ballPos.z);
 	////worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
@@ -932,13 +1172,25 @@ void App1::finalPass()
 	//	shadowMap2->getDepthMapSRV(), 
 	//	light, light2, camera);
 	//objectShader->render(renderer->getDeviceContext(), sphere2->getIndexCount());
+	}
+	
+	if (postProcessing) {
+		renderer->setZBuffer(false);
+		worldMatrix = renderer->getWorldMatrix();
+		XMMATRIX orthoMatrix = renderer->getOrthoMatrix();  // ortho matrix for 2D rendering
+		XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();	// Default camera position for orthographic rendering
+
+		orthoMesh->sendData(renderer->getDeviceContext());
+		textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, verticalBlurTexture->getShaderResourceView());
+		textureShader->render(renderer->getDeviceContext(), orthoMesh->getIndexCount());
+		renderer->setZBuffer(true);
+	}
+	
 
 	// Render GUI
 	gui();
 	renderer->endScene();
 }
-
-
 
 
 void App1::gui()
@@ -952,6 +1204,8 @@ void App1::gui()
 	// Build UI
 	ImGui::Text("FPS: %.2f", timer->getFPS());
 	ImGui::Checkbox("Wireframe mode", &wireframeToggle);
+
+	ImGui::Checkbox("Post Processing", &postProcessing);
 
 	//XMFLOAT3 lightPosition = light->getPosition();
 	//XMFLOAT3 lightDirection = light->getDirection();

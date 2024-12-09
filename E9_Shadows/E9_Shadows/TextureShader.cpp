@@ -32,7 +32,6 @@ TextureShader::~TextureShader()
 	BaseShader::~BaseShader();
 }
 
-
 void TextureShader::initShader(const wchar_t* vsFilename, const wchar_t* psFilename)
 {
 	D3D11_BUFFER_DESC matrixBufferDesc;
@@ -69,7 +68,6 @@ void TextureShader::initShader(const wchar_t* vsFilename, const wchar_t* psFilen
 
 }
 
-
 void TextureShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, ID3D11ShaderResourceView* texture)
 {
 	HRESULT result;
@@ -95,8 +93,3 @@ void TextureShader::setShaderParameters(ID3D11DeviceContext* deviceContext, cons
 	deviceContext->PSSetShaderResources(0, 1, &texture);
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
 }
-
-
-
-
-

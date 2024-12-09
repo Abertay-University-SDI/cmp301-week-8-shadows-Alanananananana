@@ -8,6 +8,8 @@
 #include "ShadowShader.h"
 #include "ObjectShader.h"
 #include "DepthShader.h"
+#include "VerticalBlurShader.h"
+#include "HorizontalBlurShader.h"
 
 
 class App1 : public BaseApplication
@@ -38,12 +40,17 @@ public:
 protected:
 	bool render();
 	
+	void processPass();
 	void depthPassLight1();
 	void depthPassLight2();
 	void depthPassLight3();
 	void depthPassLight4();
 	void depthPassLight5();
 	void depthPassLight6();
+
+	void horizontalPass();
+	void verticalPass();
+
 	void finalPass();
 	void gui();
 
@@ -52,6 +59,14 @@ private:
 	ShadowShader* shadowShader;
 	DepthShader* depthShader;
 	ObjectShader* objectShader;
+	VerticalBlurShader* verticalBlurShader;
+	HorizontalBlurShader* horizontalBlurShader;
+
+	RenderTexture* renderTexture;
+	RenderTexture* horizontalBlurTexture;
+	RenderTexture* verticalBlurTexture;
+	
+	OrthoMesh* orthoMesh;
 	PlaneMesh* mesh;
 	Light* light;
 	Light* light2;
@@ -90,6 +105,8 @@ private:
 
 	float angleX;
 	float angleY = 0.1;
+
+	bool postProcessing = false;
 };
 
 #endif

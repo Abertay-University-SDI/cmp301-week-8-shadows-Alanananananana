@@ -23,7 +23,7 @@ public:
 	bool frame();
 	XMFLOAT3 ballPos = { 50, 7, -10 };
 	XMFLOAT3 ballPos2 = { 50, 7, -40 };
-	XMFLOAT3 ghostPos = { 55, 7, 135 };
+	XMFLOAT3 ghostPos = { 55, 20, 135 };
 	XMFLOAT3 ghostPos2 = { 85, 7, 110 };
 	XMFLOAT3 ghostPos3 = { 55, 7, 85 };
 	XMFLOAT3 ghostPos4 = { 25, 7, 110 };
@@ -105,6 +105,8 @@ private:
 
 	float angleX;
 	float angleY = 0.1;
+
+	float height = 6;
 
 	bool postProcessing = false;
 };

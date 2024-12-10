@@ -86,6 +86,12 @@ private:
 		float padding;
 	};
 
+	struct HeightMapBufferType
+	{
+		float mapHeight;
+		XMFLOAT3 padding2;
+	};
+
 
 
 public:
@@ -99,7 +105,7 @@ public:
 		ID3D11ShaderResourceView* depthMap2,
 		ID3D11ShaderResourceView* depthMap3,
 		ID3D11ShaderResourceView* depthMap4,
-		ID3D11ShaderResourceView* depthMap5, ID3D11ShaderResourceView* heightMap,
+		ID3D11ShaderResourceView* depthMap5, ID3D11ShaderResourceView* heightMap, float height,
 		Light* light1, Light* light2, Light* light3, Light* light4, Light* light5, Light* light6, Camera* camera);
 
 private:
@@ -115,6 +121,7 @@ private:
 	ID3D11Buffer* lightBuffer;
 	ID3D11ShaderResourceView* heightMapSRV;
 	ID3D11Buffer* cameraBuffer;
+	ID3D11Buffer* heightMapBuffer;
 
 	// Add height map
 	ID3D11ShaderResourceView* heightMap;

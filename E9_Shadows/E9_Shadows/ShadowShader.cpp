@@ -93,14 +93,14 @@ void ShadowShader::initShader(const wchar_t* vsFilename, const wchar_t* psFilena
 	renderer->CreateBuffer(&lightBufferDesc, NULL, &lightBuffer);
 
 
-	////D3D11_BUFFER_DESC heightBufferDesc;
-//heightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-//heightBufferDesc.ByteWidth = sizeof(HeightBufferType);
-//heightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-//heightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-//heightBufferDesc.MiscFlags = 0;
-//heightBufferDesc.StructureByteStride = 0;
-//renderer->CreateBuffer(&heightBufferDesc, NULL, &heightBuffer);
+		//D3D11_BUFFER_DESC heightBufferDesc;
+	heightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	heightBufferDesc.ByteWidth = sizeof(HeightBufferType);
+	heightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	heightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	heightBufferDesc.MiscFlags = 0;
+	heightBufferDesc.StructureByteStride = 0;
+	renderer->CreateBuffer(&heightBufferDesc, NULL, &heightMapBuffer);
 
 
 	cameraBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -119,7 +119,7 @@ void ShadowShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	ID3D11ShaderResourceView* depthMap2,
 	ID3D11ShaderResourceView* depthMap3,
 	ID3D11ShaderResourceView* depthMap4,
-	ID3D11ShaderResourceView* depthMap5, ID3D11ShaderResourceView* heightMap,
+	ID3D11ShaderResourceView* depthMap5, ID3D11ShaderResourceView* heightMap, float height,
 	Light* light1, Light* light2, Light* light3, Light* light4, Light* light5, Light* light6, Camera* camera)
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -216,11 +216,19 @@ void ShadowShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 
 	deviceContext->Map(cameraBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	CameraBufferType* cameraPtr = (CameraBufferType*)mappedResource.pData;
-	cameraPtr = (CameraBufferType*)mappedResource.pData;
+	//cameraPtr = (CameraBufferType*)mappedResource.pData;
 	cameraPtr->cameraPosition = camera->getPosition();
 	cameraPtr->padding = 0.0f;
 	deviceContext->Unmap(cameraBuffer, 0);
 	deviceContext->VSSetConstantBuffers(1, 1, &cameraBuffer);
+
+	HeightMapBufferType* mapPtr;
+	deviceContext->Map(heightMapBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	mapPtr = (HeightMapBufferType*)mappedResource.pData;
+	mapPtr->mapHeight = height;
+	mapPtr->padding2 = { 0, 0, 0 };
+	deviceContext->Unmap(heightMapBuffer, 0);
+	deviceContext->VSSetConstantBuffers(2, 1, &heightMapBuffer);
 
 	// Bind resources
 	deviceContext->PSSetShaderResources(0, 1, &texture);

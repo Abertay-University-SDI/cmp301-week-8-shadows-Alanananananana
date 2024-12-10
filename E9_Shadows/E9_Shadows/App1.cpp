@@ -53,8 +53,8 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	//shadow map variables
 	int shadowmapWidth = 8192;
 	int shadowmapHeight = 8192;
-	int sceneWidth = 200;
-	int sceneHeight = 200;
+	int sceneWidth = 250;
+	int sceneHeight = 250;
 
 	//shadow maps
 	shadowMap = new ShadowMap(renderer->getDevice(), shadowmapWidth, shadowmapHeight);
@@ -69,7 +69,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 	light = new Light();
 	//light->setAmbientColour(0.6, 0.2, 0, 1);
-	light->setDiffuseColour(0.1f, 0.1f, 0.1f, 1.0f);
+	light->setDiffuseColour(0.3f, 0.3f, 0.3f, 1.0f);
 	light->setDirection(0.0f, -0.7, 0.7);
 	light->setPosition(50, 50, 110);
 	light->generateOrthoMatrix((float)sceneWidth, (float)sceneHeight, 0.1, 100);
@@ -209,7 +209,7 @@ void App1::processPass() {
 		shadowMap2->getDepthMapSRV(),
 		shadowMap3->getDepthMapSRV(),
 		shadowMap4->getDepthMapSRV(),
-		shadowMap5->getDepthMapSRV(), heightMapSRV,
+		shadowMap5->getDepthMapSRV(), heightMapSRV, height,
 		light, light2, light3, light4, light5, light6, camera);
 	shadowShader->render(renderer->getDeviceContext(), mesh->getIndexCount());
 
@@ -453,6 +453,7 @@ void App1::depthPassLight1()
 	renderer->setBackBufferRenderTarget();
 	renderer->resetViewport();
 }
+
 void App1::depthPassLight2() {
 
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
@@ -548,6 +549,7 @@ void App1::depthPassLight2() {
 	renderer->resetViewport();
 
 }
+
 void App1::depthPassLight3() {
 	shadowMap2->BindDsvAndSetNullRenderTarget(renderer->getDeviceContext());
 
@@ -630,6 +632,7 @@ void App1::depthPassLight3() {
 	renderer->setBackBufferRenderTarget();
 	renderer->resetViewport();
 }
+
 void App1::depthPassLight4() {
 
 	shadowMap3->BindDsvAndSetNullRenderTarget(renderer->getDeviceContext());
@@ -730,6 +733,7 @@ void App1::depthPassLight4() {
 	renderer->setBackBufferRenderTarget();
 	renderer->resetViewport();
 }
+
 void App1::depthPassLight5() {
 	shadowMap4->BindDsvAndSetNullRenderTarget(renderer->getDeviceContext());
 	//light 5
@@ -830,6 +834,7 @@ void App1::depthPassLight5() {
 	renderer->setBackBufferRenderTarget();
 	renderer->resetViewport();
 }
+
 void App1::depthPassLight6() {
 	shadowMap5->BindDsvAndSetNullRenderTarget(renderer->getDeviceContext());
 
@@ -1007,7 +1012,7 @@ void App1::finalPass()
 		shadowMap2->getDepthMapSRV(),
 		shadowMap3->getDepthMapSRV(), 
 		shadowMap4->getDepthMapSRV(), 
-		shadowMap5->getDepthMapSRV(), heightMapSRV,
+		shadowMap5->getDepthMapSRV(), heightMapSRV, height,
 		light, light2, light3, light4, light5, light6, camera);
 	shadowShader->render(renderer->getDeviceContext(), mesh->getIndexCount());
 
@@ -1192,7 +1197,6 @@ void App1::finalPass()
 	renderer->endScene();
 }
 
-
 void App1::gui()
 {
 	// Force turn off unnecessary shader stages.
@@ -1202,25 +1206,22 @@ void App1::gui()
 
 	
 	// Build UI
+	//title and FPS display
+	ImGui::Text("Ghostly Campfire");
 	ImGui::Text("FPS: %.2f", timer->getFPS());
 	ImGui::Checkbox("Wireframe mode", &wireframeToggle);
-
 	ImGui::Checkbox("Post Processing", &postProcessing);
 
-	//XMFLOAT3 lightPosition = light->getPosition();
-	//XMFLOAT3 lightDirection = light->getDirection();
+	//Controls for the directional light
+	//Position
+	float lightPosition[3] = { light->getPosition().x, light->getPosition().y, light->getPosition().z };
+	ImGui::SliderFloat3("light position x, y, z", lightPosition,-200, 200);
+	light->setPosition(lightPosition[0], lightPosition[1], lightPosition[2]);
 
-	//ImGui::SliderFloat("light position X", &lightPosition.x, -50.0f, 50.0f);
-	//ImGui::SliderFloat("light position Y", &lightPosition.y, -50.0f, 50.0f);
-	//ImGui::SliderFloat("light position Z", &lightPosition.z, -50.0f, 50.0f);
-	//ImGui::SliderFloat("Light direction X", &lightDirection.x, -1, 1);
-	//ImGui::SliderFloat("Light direction Y", &lightDirection.y, -1, 1);
-	//ImGui::SliderFloat("Light direction Z", &lightDirection.z, -1, 1);
-
-	//light->setPosition(lightPosition.x, lightPosition.y, lightPosition.z);
-	//light->setDirection(lightDirection.x, lightDirection.y, lightDirection.z);
-
-	//ballPos = lightPosition;
+	//Direction
+	float lightDirection[3] = { light->getDirection().x, light->getDirection().y, light->getDirection().z };
+	ImGui::SliderFloat3("light direction x, y, z", lightDirection, -10, 10);
+	light->setDirection(lightDirection[0], lightDirection[1], lightDirection[2]);
 
 
 	//XMFLOAT3 light2Position = light2->getPosition();
@@ -1237,11 +1238,11 @@ void App1::gui()
 	//light2->setPosition(light2Position.x, light2Position.y, light2Position.z);
 	////light2->setDirection(light2Direction.x, light2Direction.y, light2Direction.z);
 	//ballPos2 = light2->getPosition();
+	ImGui::SliderFloat("map height", &height, -0, 10);
 
-
-	/*ImGui::SliderFloat("ghost speed", &speed, -0.1, 0.1f);
+	ImGui::SliderFloat("ghost speed", &speed, -0.1, 0.1);
 	ImGui::SliderFloat("bob speed", &bobSpeed, -0.1, 0.1f);
-	ImGui::SliderFloat("bob height", &bobHeight, 0, 10);*/
+	ImGui::SliderFloat("bob height", &bobHeight, 0, 10);
 
 
 	//XMFLOAT3 lightPosition = light3->getPosition();
@@ -1273,13 +1274,13 @@ void App1::gui()
 
 	
 
-	//XMFLOAT3 ghostPosition = ghostPos;
+	XMFLOAT3 ghostPosition = ghostPos;
 
-	//ImGui::SliderFloat("ghost position X", &ghostPosition.x, -50.0f, 50.0f);
-	//ImGui::SliderFloat("ghost position Y", &ghostPosition.y, -50.0f, 50.0f);
-	//ImGui::SliderFloat("ghost position Z", &ghostPosition.z, -50.0f, 50.0f);
+	ImGui::SliderFloat("ghost position X", &ghostPosition.x, -50.0f, 50.0f);
+	ImGui::SliderFloat("ghost position Y", &ghostPosition.y, -50.0f, 50.0f);
+	ImGui::SliderFloat("ghost position Z", &ghostPosition.z, -50.0f, 50.0f);
 
-	//ghostPos = ghostPosition;
+	ghostPos = ghostPosition;
 	
 	// Render UI
 	ImGui::Render();

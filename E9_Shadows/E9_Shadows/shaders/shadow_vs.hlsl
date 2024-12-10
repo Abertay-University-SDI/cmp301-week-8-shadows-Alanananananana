@@ -15,6 +15,8 @@ cbuffer MatrixBuffer : register(b0)
     matrix lightProjectionMatrix5;
     matrix lightViewMatrix6;
     matrix lightProjectionMatrix6;
+    matrix lightViewMatrix7;
+    matrix lightProjectionMatrix7;
 };
 
 Texture2D heightMap : register(t2); // Height map texture
@@ -50,8 +52,9 @@ struct OutputType
     float4 lightViewPos4 : TEXCOORD4;
     float4 lightViewPos5 : TEXCOORD5;
     float4 lightViewPos6 : TEXCOORD6;
-    float3 worldPosition : TEXCOORD7;
-    float3 viewVector : TEXCOORD8;
+    float4 lightViewPos7 : TEXCOORD7;
+    float3 worldPosition : TEXCOORD8;
+    float3 viewVector : TEXCOORD9;
 };
 
 float GetHeight(float2 uv)
@@ -114,6 +117,9 @@ OutputType main(InputType input)
 
     output.lightViewPos6 = mul(worldPosition, lightViewMatrix6);
     output.lightViewPos6 = mul(output.lightViewPos6, lightProjectionMatrix6);
+    
+    output.lightViewPos7 = mul(worldPosition, lightViewMatrix7);
+    output.lightViewPos7 = mul(output.lightViewPos7, lightProjectionMatrix7);
 
     // Pass texture coordinates and transformed normals
     output.tex = input.tex;

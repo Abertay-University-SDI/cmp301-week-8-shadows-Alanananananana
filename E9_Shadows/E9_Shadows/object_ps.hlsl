@@ -1,5 +1,5 @@
 Texture2D shaderTexture : register(t0);
-Texture2D shadowMapTexture[5] : register(t1);
+Texture2D shadowMapTexture[6] : register(t1);
 
 SamplerState diffuseSampler : register(s0);
 SamplerState shadowSampler : register(s1);
@@ -52,6 +52,15 @@ cbuffer LightBufferType : register(b0)
     float outerCone6;
     float3 attenuation6;
     //float padding6;
+    
+    float4 diffuse7;
+    float3 position7;
+    float range7;
+    float3 direction7;
+    float innerCone7;
+    float outerCone7;
+    float3 attenuation7;
+    //float padding7;
 };
 
 struct InputType
@@ -65,8 +74,9 @@ struct InputType
     float4 lightViewPos4 : TEXCOORD4;
     float4 lightViewPos5 : TEXCOORD5;
     float4 lightViewPos6 : TEXCOORD6;
-    float3 worldPosition : TEXCOORD7;
-    float3 viewVector : TEXCOORD8;
+    float4 lightViewPos7 : TEXCOORD7;
+    float3 worldPosition : TEXCOORD8;
+    float3 viewVector : TEXCOORD9;
 };
 
 //Calculate lighting intensity based on direction and normal. Combine with light colour.
@@ -193,6 +203,11 @@ float4 main(InputType input) : SV_TARGET
         colour += calculateSpotlight(position6, direction6, input.worldPosition, input.normal, diffuse6, innerCone6, outerCone6, attenuation6, range6);
     }
     
+    float2 pTexCoord7 = getProjectiveCoords(input.lightViewPos7);
+    if (hasDepthData(pTexCoord7) && !isInShadow(shadowMapTexture[5], pTexCoord7, input.lightViewPos7, shadowMapBias))
+    {
+        colour += calculateSpotlight(position7, direction7, input.worldPosition, input.normal, diffuse7, innerCone7, outerCone7, attenuation7, range7);
+    }
     
     //Combine ambient light from both lights
     colour += (saturate(ambient1));
@@ -200,64 +215,4 @@ float4 main(InputType input) : SV_TARGET
     //Return the final color and texture
     return colour * textureColour;
     //return float4(input.normal, 1);
-    
-
 }
-
-
-//float4 main(InputType input) : SV_TARGET
-//{
-//    //Shadow Map Bias
-//    float shadowMapBias = 0.001f;
-//    float4 colour = float4(0.f, 0.f, 0.f, 1.f);
-//    float4 textureColour = shaderTexture.Sample(diffuseSampler, input.tex);
-//	//Calculate the projected texture coordinates for light 1
-//    float2 pTexCoord1 = getProjectiveCoords(input.lightViewPos1);
-//    float3 viewVector = normalize(input.viewVector);
-
-//    float3 normal = normalize(input.normal);
-    
-//    float4 pointLightDiffuse;
-//    float3 toPointLight;
-//    float4 pointlightSpecular;
-	
-//    //Shadow test for light 1
-//    if (hasDepthData(pTexCoord1) && !isInShadow(shadowMapTexture[0], pTexCoord1, input.lightViewPos1, shadowMapBias))
-//    {
-//        colour += calculateLighting(-direction1, input.normal, diffuse1);
-//    }
-
-//    //Calculate the projected texture coordinates for light 2
-//    float2 pTexCoord2 = getProjectiveCoords(input.lightViewPos2);
-    
-//    //Shadow test for light 2
-//    //toPointLight = normalize(position2 - input.worldPosition);
-//   //pointLightDiffuse = calculatePointLighting(toPointLight, normal, diffuse2);
-//    //pointlightSpecular = calculateSpecular(toPointLight, normal, viewVector, float4(0.0, 0.0, 0.0, 1), specularPower);
-//    float3 lightVector = normalize(position2 - input.worldPosition);
-//    if (hasDepthData(pTexCoord2) && !isInShadow(shadowMapTexture[1], pTexCoord2, input.lightViewPos2, shadowMapBias))
-//    {
-//        colour += calculateLighting(lightVector, input.normal, diffuse2);
-//    }
-    
-//    //toPointLight = normalize(position2 - input.worldPosition);
-//    //pointLightDiffuse = calculatePointLighting(toPointLight, normal, diffuse2);
-//    //pointlightSpecular = calculateSpecular(toPointLight, normal, viewVector, float4(0.1, 0.1, 0.1, 1), specularPower);
-//    //if (hasDepthData(pTexCoord2) && !isInShadow(shadowMapTexture[1], pTexCoord2, input.lightViewPos2, shadowMapBias))
-//    //{
-        
-//    //    //colour += calculateLighting(-direction2, input.normal, diffuse2);
-//    //    colour += (pointLightDiffuse + diffuse1 + ambient1);
-//    //    //float3 lightVector = normalize(position2 - input.lightViewPos2.xyz);
-//    //    //colour += calculateLighting(lightVector, input.normal, diffuse2);
-//    //}
-    
-//    //colour = saturate(pointLightDiffuse + diffuse1 + ambient1);
-    
-//    //Combine ambient light from both lights
-//    colour += (saturate(ambient1));
-
-//    //Return the final color and texture
-//    return (colour * textureColour);
-//    //return float4(input.normal, 1);
-//}

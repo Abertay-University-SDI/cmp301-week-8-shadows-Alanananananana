@@ -119,8 +119,9 @@ void ShadowShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	ID3D11ShaderResourceView* depthMap2,
 	ID3D11ShaderResourceView* depthMap3,
 	ID3D11ShaderResourceView* depthMap4,
-	ID3D11ShaderResourceView* depthMap5, ID3D11ShaderResourceView* heightMap, float height,
-	Light* light1, Light* light2, Light* light3, Light* light4, Light* light5, Light* light6, Camera* camera)
+	ID3D11ShaderResourceView* depthMap5,
+	ID3D11ShaderResourceView* depthMap6, ID3D11ShaderResourceView* heightMap, float height,
+	Light* light1, Light* light2, Light* light3, Light* light4, Light* light5, Light* light6, Light* light7, Camera* camera)
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 
@@ -140,6 +141,8 @@ void ShadowShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	XMMATRIX tLightProj5 = XMMatrixTranspose(light5->getOrthoMatrix());
 	XMMATRIX tLightView6 = XMMatrixTranspose(light6->getViewMatrix());
 	XMMATRIX tLightProj6 = XMMatrixTranspose(light6->getOrthoMatrix());
+	XMMATRIX tLightView7 = XMMatrixTranspose(light7->getViewMatrix());
+	XMMATRIX tLightProj7 = XMMatrixTranspose(light7->getOrthoMatrix());
 
 	// Map the matrix buffer
 	deviceContext->Map(matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
@@ -159,6 +162,8 @@ void ShadowShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	dataPtr->lightProjection5 = tLightProj5;
 	dataPtr->lightView6 = tLightView6;
 	dataPtr->lightProjection6 = tLightProj6;
+	dataPtr->lightView7 = tLightView7;
+	dataPtr->lightProjection7 = tLightProj7;
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
 
@@ -211,6 +216,15 @@ void ShadowShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	lightPtr->attenuation6 = light6->getAttenuation();
 	//lightPtr->padding6 = 0.0f;
 
+	lightPtr->diffuse7 = light7->getDiffuseColour();
+	lightPtr->position7 = light7->getPosition();
+	lightPtr->range7 = light7->getRange();
+	lightPtr->direction7 = light7->getDirection();
+	lightPtr->innerCone7 = light7->getInnerConeAngle();
+	lightPtr->outerCone7 = light7->getOuterConeAngle();
+	lightPtr->attenuation7 = light7->getAttenuation();
+	//lightPtr->padding7 = 0.0f;
+
 	deviceContext->Unmap(lightBuffer, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &lightBuffer);
 
@@ -237,7 +251,7 @@ void ShadowShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	deviceContext->VSSetSamplers(2, 1, &sampleStateHeight);
 
 	// Bind shadow maps
-	ID3D11ShaderResourceView* shadowMaps[5] = { depthMap1, depthMap2, depthMap3, depthMap4, depthMap5 };
-	deviceContext->PSSetShaderResources(1, 5, shadowMaps);
+	ID3D11ShaderResourceView* shadowMaps[6] = { depthMap1, depthMap2, depthMap3, depthMap4, depthMap5, depthMap6 };
+	deviceContext->PSSetShaderResources(1, 6, shadowMaps);
 	deviceContext->PSSetSamplers(1, 1, &sampleStateShadow);
 }

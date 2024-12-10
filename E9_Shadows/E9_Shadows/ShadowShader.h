@@ -25,6 +25,8 @@ private:
 		XMMATRIX lightProjection5;
 		XMMATRIX lightView6;
 		XMMATRIX lightProjection6;
+		XMMATRIX lightView7;
+		XMMATRIX lightProjection7;
 	};
 
 	struct LightBufferType
@@ -74,6 +76,15 @@ private:
 		float outerCone6;
 		XMFLOAT3 attenuation6;
 		//float padding6;
+
+		XMFLOAT4 diffuse7;
+		XMFLOAT3 position7;
+		float range7;
+		XMFLOAT3 direction7;
+		float innerCone7;
+		float outerCone7;
+		XMFLOAT3 attenuation7;
+		//float padding7;
 	};
 
 	struct HeightBufferType {
@@ -105,8 +116,9 @@ public:
 		ID3D11ShaderResourceView* depthMap2,
 		ID3D11ShaderResourceView* depthMap3,
 		ID3D11ShaderResourceView* depthMap4,
-		ID3D11ShaderResourceView* depthMap5, ID3D11ShaderResourceView* heightMap, float height,
-		Light* light1, Light* light2, Light* light3, Light* light4, Light* light5, Light* light6, Camera* camera);
+		ID3D11ShaderResourceView* depthMap5, 
+		ID3D11ShaderResourceView* depthMap6, ID3D11ShaderResourceView* heightMap, float height,
+		Light* light1, Light* light2, Light* light3, Light* light4, Light* light5, Light* light6, Light* light7, Camera* camera);
 
 private:
 	void initShader(const wchar_t* vs, const wchar_t* ps);

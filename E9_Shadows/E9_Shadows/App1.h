@@ -21,7 +21,7 @@ public:
 	void init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeight, Input* in, bool VSYNC, bool FULL_SCREEN);
 
 	bool frame();
-	XMFLOAT3 ballPos = { 50, 7, -10 };
+	XMFLOAT3 ballPos = { 50, 30, 100 };
 	XMFLOAT3 ballPos2 = { 50, 7, -40 };
 	XMFLOAT3 ghostPos = { 55, 20, 135 };
 	XMFLOAT3 ghostPos2 = { 85, 7, 110 };
@@ -37,6 +37,7 @@ public:
 	ShadowMap* shadowMap3;
 	ShadowMap* shadowMap4;
 	ShadowMap* shadowMap5;
+	ShadowMap* shadowMap6;
 protected:
 	bool render();
 	
@@ -47,6 +48,7 @@ protected:
 	void depthPassLight4();
 	void depthPassLight5();
 	void depthPassLight6();
+	void depthPassLight8();
 
 	void horizontalPass();
 	void verticalPass();
@@ -75,6 +77,8 @@ private:
 	Light* light5;
 	Light* light6;
 	Light* light7;
+	Light* light8;
+	Light* light9;
 
 	ID3D11ShaderResourceView* heightMapSRV;
 	ID3D11RenderTargetView* renderTargetView;

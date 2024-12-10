@@ -5,7 +5,7 @@
 // Configure defaul camera (including positions, rotation and ortho matrix)
 Camera::Camera()
 {
-	position = XMFLOAT3(0.f, 0.f, 0.f);
+	position = XMFLOAT3(0.f, -10.f, 0.f);
 	rotation = XMFLOAT3(0.f, 0.f, 0.f);
 	cSpeed = 20;
 
